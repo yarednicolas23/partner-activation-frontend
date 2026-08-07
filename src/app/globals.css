@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  /* Marca — extraído de my.kaspersky.com (botón "Iniciar sesión": rgb(29,161,137)) */
+  --color-brand: #1da189;
+  --color-brand-hover: #178572;
+  --color-brand-soft: #e7f4f1;
+
+  /* Base editorial (skill minimalist-ui) */
+  --color-ink: #1d1d1b; /* texto principal — igual al heading de my.kaspersky.com */
+  --color-ink-muted: #6b6f6d;
+  --color-canvas: #f4f6f5; /* fondo de página, tono frío pálido como my.kaspersky.com */
+  --color-surface: #ffffff; /* cards */
+  --color-border: #e6e8e7;
+
+  /* Pastels — estados/badges (skill minimalist-ui) */
+  --color-pastel-red-bg: #fdebec;
+  --color-pastel-red-text: #9f2f2d;
+  --color-pastel-blue-bg: #e1f3fe;
+  --color-pastel-blue-text: #1f6c9f;
+  --color-pastel-green-bg: #edf3ec;
+  --color-pastel-green-text: #346538;
+  --color-pastel-yellow-bg: #fbf3db;
+  --color-pastel-yellow-text: #956400;
+
+  --font-sans:
+    -apple-system, "system-ui", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+@theme inline {
+  --color-brand: var(--color-brand);
+  --color-brand-hover: var(--color-brand-hover);
+  --color-brand-soft: var(--color-brand-soft);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+  --font-sans: var(--font-sans);
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}

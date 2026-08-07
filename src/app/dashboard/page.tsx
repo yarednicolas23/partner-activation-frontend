@@ -1,0 +1,55 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import type { PartnerProfile } from "@/lib/types";
+
+async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
+  const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const profile = await getProfile(session.access_token);
+
+  return (
+    <main className="mx-auto w-full max-w-3xl px-6 py-16">
+      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+        Olá{profile?.full_name ? `, ${profile.full_name}` : ""}
+      </h1>
+      <p className="mb-8 text-sm text-ink-muted">{session.user.email}</p>
+
+      <div className="rounded-lg border border-border bg-surface p-6">
+        {profile ? (
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt className="text-ink-muted">Empresa</dt>
+              <dd className="text-ink">{profile.company_name ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-ink-muted">Perfil</dt>
+              <dd className="text-ink">{profile.role}</dd>
+            </div>
+          </dl>
+        ) : (
+          <p className="text-sm text-pastel-red-text">
+            Não foi possível carregar seu perfil no backend. Verifique se a
+            API está rodando e o `.env` está configurado.
+          </p>
+        )}
+      </div>
+    </main>
+  );
+}
