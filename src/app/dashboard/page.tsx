@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
@@ -26,10 +27,23 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-16">
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-        Olá{profile?.full_name ? `, ${profile.full_name}` : ""}
-      </h1>
-      <p className="mb-8 text-sm text-ink-muted">{session.user.email}</p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+            Olá{profile?.full_name ? `, ${profile.full_name}` : ""}
+          </h1>
+          <p className="text-sm text-ink-muted">{session.user.email}</p>
+        </div>
+
+        {profile?.role === "admin" && (
+          <Link
+            href="/admin/partners"
+            className="shrink-0 rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition hover:bg-brand-soft"
+          >
+            Convidar parceiro
+          </Link>
+        )}
+      </div>
 
       <div className="rounded-lg border border-border bg-surface p-6">
         {profile ? (
