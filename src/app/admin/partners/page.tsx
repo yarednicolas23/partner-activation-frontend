@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
+import { Navbar } from "@/components/navbar";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -42,59 +43,65 @@ export default async function AdminPartnersListPage() {
   const partners = await getPartners(session.access_token);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-16">
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-            Parceiros
-          </h1>
-          <p className="text-sm text-ink-muted">
-            {partners.length} parceiro{partners.length === 1 ? "" : "s"}
-          </p>
+    <>
+      <Navbar profile={profile} />
+      <main className="mx-auto w-full max-w-3xl px-6 py-16">
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+              Parceiros
+            </h1>
+            <p className="text-sm text-ink-muted">
+              {partners.length} parceiro{partners.length === 1 ? "" : "s"}
+            </p>
+          </div>
+
+          <Link
+            href="/admin/partners/invite"
+            className="shrink-0 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+          >
+            Convidar parceiro
+          </Link>
         </div>
 
-        <Link
-          href="/admin/partners/invite"
-          className="shrink-0 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
-        >
-          Convidar parceiro
-        </Link>
-      </div>
-
-      {partners.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-muted">
-          Nenhum parceiro convidado ainda.
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-surface">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-ink-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">E-mail</th>
-                <th className="px-4 py-3 font-medium">Empresa</th>
-                <th className="px-4 py-3 font-medium">Convidado em</th>
-              </tr>
-            </thead>
-            <tbody>
-              {partners.map((partner) => (
-                <tr key={partner.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 text-ink">
-                    {partner.full_name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-ink">{partner.email}</td>
-                  <td className="px-4 py-3 text-ink">
-                    {partner.company_name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">
-                    {new Date(partner.created_at).toLocaleDateString("pt-BR")}
-                  </td>
+        {partners.length === 0 ? (
+          <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-muted">
+            Nenhum parceiro convidado ainda.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border text-ink-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Nome</th>
+                  <th className="px-4 py-3 font-medium">E-mail</th>
+                  <th className="px-4 py-3 font-medium">Empresa</th>
+                  <th className="px-4 py-3 font-medium">Convidado em</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </main>
+              </thead>
+              <tbody>
+                {partners.map((partner) => (
+                  <tr
+                    key={partner.id}
+                    className="border-b border-border last:border-0"
+                  >
+                    <td className="px-4 py-3 text-ink">
+                      {partner.full_name ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-ink">{partner.email}</td>
+                    <td className="px-4 py-3 text-ink">
+                      {partner.company_name ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-ink-muted">
+                      {new Date(partner.created_at).toLocaleDateString("pt-BR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
+    </>
   );
 }

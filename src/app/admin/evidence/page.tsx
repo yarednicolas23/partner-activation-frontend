@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { EvidenceQueueItem, PartnerProfile } from "@/lib/types";
+import { Navbar } from "@/components/navbar";
 import { EvidenceQueue } from "./evidence-queue";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -45,15 +46,19 @@ export default async function AdminEvidencePage() {
   const items = await getPendingEvidence(session.access_token);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-16">
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-        Evidências pendentes
-      </h1>
-      <p className="mb-8 text-sm text-ink-muted">
-        {items.length} evidência{items.length === 1 ? "" : "s"} aguardando revisão
-      </p>
+    <>
+      <Navbar profile={profile} />
+      <main className="mx-auto w-full max-w-3xl px-6 py-16">
+        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+          Evidências pendentes
+        </h1>
+        <p className="mb-8 text-sm text-ink-muted">
+          {items.length} evidência{items.length === 1 ? "" : "s"} aguardando
+          revisão
+        </p>
 
-      <EvidenceQueue initialItems={items} />
-    </main>
+        <EvidenceQueue initialItems={items} />
+      </main>
+    </>
   );
 }
