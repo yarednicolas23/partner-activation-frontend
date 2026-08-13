@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { PartnerProfile } from "@/lib/types";
+import type { MilestoneView, PartnerProfile } from "@/lib/types";
+import { MilestonesSection } from "./milestones-section";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -10,6 +11,16 @@ async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   });
 
   if (!res.ok) return null;
+  return res.json();
+}
+
+async function getMilestones(accessToken: string): Promise<MilestoneView[]> {
+  const res = await fetch(`${process.env.BACKEND_URL}/milestones`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return [];
   return res.json();
 }
 
@@ -24,6 +35,8 @@ export default async function DashboardPage() {
   }
 
   const profile = await getProfile(session.access_token);
+  const milestones =
+    profile?.role === "partner" ? await getMilestones(session.access_token) : [];
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-16">
@@ -36,12 +49,20 @@ export default async function DashboardPage() {
         </div>
 
         {profile?.role === "admin" && (
-          <Link
-            href="/admin/partners"
-            className="shrink-0 rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition hover:bg-brand-soft"
-          >
-            Convidar parceiro
-          </Link>
+          <div className="flex shrink-0 gap-2">
+            <Link
+              href="/admin/partners"
+              className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition hover:bg-brand-soft"
+            >
+              Parceiros
+            </Link>
+            <Link
+              href="/admin/evidence"
+              className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition hover:bg-brand-soft"
+            >
+              Evidências
+            </Link>
+          </div>
         )}
       </div>
 
@@ -64,6 +85,8 @@ export default async function DashboardPage() {
           </p>
         )}
       </div>
+
+      {profile?.role === "partner" && <MilestonesSection milestones={milestones} />}
     </main>
   );
 }

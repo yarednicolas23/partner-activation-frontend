@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
-import { InvitePartnerForm } from "./invite-partner-form";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -13,7 +13,17 @@ async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   return res.json();
 }
 
-export default async function AdminPartnersPage() {
+async function getPartners(accessToken: string): Promise<PartnerProfile[]> {
+  const res = await fetch(`${process.env.BACKEND_URL}/partners`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export default async function AdminPartnersListPage() {
   const supabase = await createClient();
   const {
     data: { session },
@@ -29,19 +39,62 @@ export default async function AdminPartnersPage() {
     redirect("/dashboard");
   }
 
-  return (
-    <main className="mx-auto w-full max-w-lg px-6 py-16">
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-        Convidar parceiro
-      </h1>
-      <p className="mb-8 text-sm text-ink-muted">
-        O parceiro recebe um e-mail com um link de acesso para completar o
-        cadastro.
-      </p>
+  const partners = await getPartners(session.access_token);
 
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <InvitePartnerForm />
+  return (
+    <main className="mx-auto w-full max-w-3xl px-6 py-16">
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+            Parceiros
+          </h1>
+          <p className="text-sm text-ink-muted">
+            {partners.length} parceiro{partners.length === 1 ? "" : "s"}
+          </p>
+        </div>
+
+        <Link
+          href="/admin/partners/invite"
+          className="shrink-0 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+        >
+          Convidar parceiro
+        </Link>
       </div>
+
+      {partners.length === 0 ? (
+        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-muted">
+          Nenhum parceiro convidado ainda.
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-border bg-surface">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-border text-ink-muted">
+              <tr>
+                <th className="px-4 py-3 font-medium">Nome</th>
+                <th className="px-4 py-3 font-medium">E-mail</th>
+                <th className="px-4 py-3 font-medium">Empresa</th>
+                <th className="px-4 py-3 font-medium">Convidado em</th>
+              </tr>
+            </thead>
+            <tbody>
+              {partners.map((partner) => (
+                <tr key={partner.id} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3 text-ink">
+                    {partner.full_name ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-ink">{partner.email}</td>
+                  <td className="px-4 py-3 text-ink">
+                    {partner.company_name ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">
+                    {new Date(partner.created_at).toLocaleDateString("pt-BR")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 }
