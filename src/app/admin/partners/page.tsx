@@ -83,10 +83,15 @@ export default async function AdminPartnersListPage() {
                 {partners.map((partner) => (
                   <tr
                     key={partner.id}
-                    className="border-b border-border last:border-0"
+                    className="border-b border-border last:border-0 hover:bg-brand-soft/40"
                   >
                     <td className="px-4 py-3 text-ink">
-                      {partner.full_name ?? "—"}
+                      <Link
+                        href={`/admin/partners/${partner.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {partner.full_name ?? "—"}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-ink">{partner.email}</td>
                     <td className="px-4 py-3 text-ink">
