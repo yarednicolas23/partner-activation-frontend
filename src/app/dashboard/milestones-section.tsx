@@ -68,25 +68,68 @@ function TaskRow({ task }: { task: TaskWithEvidence }) {
     event.preventDefault();
     setStatus("sending");
 
-    let res: Response;
     if (task.evidence_type === "file") {
       if (!file) {
         setStatus("error");
         return;
       }
+
+      // 1. Pedimos un presigned POST — o backend valida tipo/tamanho e devolve
+      //    a URL + campos assinados do bucket S3.
+      const uploadUrlRes = await fetch(
+        `/api/milestones/tasks/${task.id}/evidence/upload-url`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contentType: file.type }),
+        },
+      );
+
+      if (!uploadUrlRes.ok) {
+        setStatus("error");
+        return;
+      }
+
+      const { url, fields, filePath } = (await uploadUrlRes.json()) as {
+        url: string;
+        fields: Record<string, string>;
+        filePath: string;
+      };
+
+      // 2. Subimos direto pro S3 — o arquivo nunca passa pelo nosso backend.
       const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
       formData.append("file", file);
-      res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
-        method: "POST",
-        body: formData,
-      });
-    } else {
-      res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
+
+      const s3Res = await fetch(url, { method: "POST", body: formData });
+      if (!s3Res.ok) {
+        setStatus("error");
+        return;
+      }
+
+      // 3. Registramos a evidência com o path já enviado.
+      const res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ textValue }),
+        body: JSON.stringify({ filePath }),
       });
+
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
+
+      setEvidence(await res.json());
+      setStatus("idle");
+      setFile(null);
+      return;
     }
+
+    const res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ textValue }),
+    });
 
     if (!res.ok) {
       setStatus("error");
@@ -96,7 +139,6 @@ function TaskRow({ task }: { task: TaskWithEvidence }) {
     setEvidence(await res.json());
     setStatus("idle");
     setTextValue("");
-    setFile(null);
   }
 
   return (
@@ -134,6 +176,7 @@ function TaskRow({ task }: { task: TaskWithEvidence }) {
             <input
               type="file"
               required
+              accept="application/pdf,image/jpeg,image/png"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="flex-1 text-sm text-ink-muted"
             />

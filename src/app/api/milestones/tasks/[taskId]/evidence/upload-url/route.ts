@@ -16,7 +16,7 @@ export async function POST(
   }
 
   const res = await fetch(
-    `${process.env.BACKEND_URL}/milestones/tasks/${taskId}/evidence`,
+    `${process.env.BACKEND_URL}/milestones/tasks/${taskId}/evidence/upload-url`,
     {
       method: "POST",
       headers: {
