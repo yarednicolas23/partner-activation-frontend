@@ -1,0 +1,4 @@
+# Copiar a terraform.tfvars y ajustar si hace falta — todos tienen default,
+# este archivo solo documenta qué se puede overridear.
+
+# backend_url = "https://partner-activation-backend-production.up.railway.app"
