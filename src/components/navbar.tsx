@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PartnerProfile } from "@/lib/types";
+import { LogoutButton } from "./logout-button";
 
 export function Navbar({ profile }: { profile: PartnerProfile | null }) {
   return (
@@ -22,6 +23,7 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
               <NavLink href="/admin/rewards">Recompensas</NavLink>
             </>
           )}
+          <LogoutButton />
         </nav>
       </div>
     </header>
