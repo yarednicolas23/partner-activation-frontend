@@ -173,19 +173,30 @@ function TaskRow({ task }: { task: TaskWithEvidence }) {
               className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
             />
           ) : (
-            <input
-              type="file"
-              required
-              accept="application/pdf,image/jpeg,image/png"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="flex-1 text-sm text-ink-muted"
-            />
+            <label
+              htmlFor={`file-${task.id}`}
+              className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-dashed border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition hover:border-brand hover:bg-brand-soft hover:text-ink"
+            >
+              <UploadIcon />
+              <span className="truncate">
+                {file ? file.name : "Escolher arquivo (PDF, JPG ou PNG)"}
+              </span>
+              <input
+                id={`file-${task.id}`}
+                type="file"
+                required
+                accept="application/pdf,image/jpeg,image/png"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+              />
+            </label>
           )}
           <button
             type="submit"
             disabled={status === "sending"}
-            className="shrink-0 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex shrink-0 items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
+            {status !== "sending" && <SendIcon />}
             {status === "sending" ? "Enviando..." : "Enviar"}
           </button>
         </form>
@@ -197,5 +208,46 @@ function TaskRow({ task }: { task: TaskWithEvidence }) {
         </p>
       )}
     </div>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <path d="M12 16V4" />
+      <path d="m7 9 5-5 5 5" />
+      <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <path d="M4 12h16" />
+      <path d="m13 5 7 7-7 7" />
+    </svg>
   );
 }
