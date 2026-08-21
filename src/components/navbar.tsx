@@ -19,6 +19,7 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
             <>
               <NavLink href="/admin/partners">Parceiros</NavLink>
               <NavLink href="/admin/evidence">Evidências</NavLink>
+              <NavLink href="/admin/rewards">Recompensas</NavLink>
             </>
           )}
         </nav>

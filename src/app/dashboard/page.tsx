@@ -1,8 +1,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { MilestoneView, PartnerProfile } from "@/lib/types";
+import type {
+  MilestoneView,
+  PartnerProfile,
+  RedemptionQueueItem,
+  RewardWithMilestone,
+} from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { MilestonesSection } from "./milestones-section";
+import { RewardsSection } from "./rewards-section";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -24,6 +30,30 @@ async function getMilestones(accessToken: string): Promise<MilestoneView[]> {
   return res.json();
 }
 
+async function getEligibleRewards(
+  accessToken: string,
+): Promise<RewardWithMilestone[]> {
+  const res = await fetch(`${process.env.BACKEND_URL}/rewards/eligible`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function getMyRedemptions(
+  accessToken: string,
+): Promise<RedemptionQueueItem[]> {
+  const res = await fetch(`${process.env.BACKEND_URL}/rewards/redemptions/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -35,8 +65,14 @@ export default async function DashboardPage() {
   }
 
   const profile = await getProfile(session.access_token);
-  const milestones =
-    profile?.role === "partner" ? await getMilestones(session.access_token) : [];
+  const isPartner = profile?.role === "partner";
+  const [milestones, eligibleRewards, myRedemptions] = isPartner
+    ? await Promise.all([
+        getMilestones(session.access_token),
+        getEligibleRewards(session.access_token),
+        getMyRedemptions(session.access_token),
+      ])
+    : [[], [], []];
 
   return (
     <>
@@ -69,8 +105,14 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {profile?.role === "partner" && (
-          <MilestonesSection milestones={milestones} />
+        {isPartner && (
+          <>
+            <MilestonesSection milestones={milestones} />
+            <RewardsSection
+              eligibleRewards={eligibleRewards}
+              initialRedemptions={myRedemptions}
+            />
+          </>
         )}
       </main>
     </>
