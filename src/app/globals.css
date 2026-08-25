@@ -36,6 +36,14 @@
   --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);
+  --color-pastel-red-bg: var(--color-pastel-red-bg);
+  --color-pastel-red-text: var(--color-pastel-red-text);
+  --color-pastel-blue-bg: var(--color-pastel-blue-bg);
+  --color-pastel-blue-text: var(--color-pastel-blue-text);
+  --color-pastel-green-bg: var(--color-pastel-green-bg);
+  --color-pastel-green-text: var(--color-pastel-green-text);
+  --color-pastel-yellow-bg: var(--color-pastel-yellow-bg);
+  --color-pastel-yellow-text: var(--color-pastel-yellow-text);
   --font-sans: var(--font-sans);
 }
 
