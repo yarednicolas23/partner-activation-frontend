@@ -7,7 +7,7 @@ import type {
   RewardWithMilestone,
 } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
-import { MilestonesSection } from "./milestones-section";
+import { JourneyMap } from "./journey-map";
 import { RewardsSection } from "./rewards-section";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
 
         {isPartner && (
           <>
-            <MilestonesSection milestones={milestones} />
+            <JourneyMap milestones={milestones} />
             <RewardsSection
               eligibleRewards={eligibleRewards}
               initialRedemptions={myRedemptions}

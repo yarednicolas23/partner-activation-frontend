@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { MilestoneView, TaskWithEvidence } from "@/lib/types";
+import type { TaskWithEvidence } from "@/lib/types";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Em análise",
@@ -15,39 +15,7 @@ const STATUS_CLASS: Record<string, string> = {
   rejected: "bg-pastel-red-bg text-pastel-red-text",
 };
 
-export function MilestonesSection({ milestones }: { milestones: MilestoneView[] }) {
-  return (
-    <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-semibold tracking-tight text-ink">Missões</h2>
-
-      {milestones.map((milestone) =>
-        milestone.locked ? (
-          <div
-            key={milestone.id}
-            className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-muted"
-          >
-            Milestone {milestone.order_index} — bloqueado
-          </div>
-        ) : (
-          <div key={milestone.id} className="rounded-lg border border-border bg-surface p-6">
-            <h3 className="mb-1 text-base font-semibold text-ink">
-              {milestone.order_index}. {milestone.title}
-            </h3>
-            {milestone.description && (
-              <p className="mb-4 text-sm text-ink-muted">{milestone.description}</p>
-            )}
-
-            <div className="space-y-3">
-              {milestone.tasks?.map((task) => <TaskRow key={task.id} task={task} />)}
-            </div>
-          </div>
-        ),
-      )}
-    </div>
-  );
-}
-
-function TaskRow({ task }: { task: TaskWithEvidence }) {
+export function TaskRow({ task }: { task: TaskWithEvidence }) {
   const [evidence, setEvidence] = useState(task.evidence);
   const [textValue, setTextValue] = useState("");
   const [file, setFile] = useState<File | null>(null);
