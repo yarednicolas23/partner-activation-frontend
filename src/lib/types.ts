@@ -89,3 +89,19 @@ export interface RedemptionQueueItem extends RewardRedemption {
   reward: Reward;
   partner: { id: string; email: string; full_name: string | null };
 }
+
+// Espejo de backend/src/stats/stats.interfaces.ts
+export interface WeeklyCount {
+  week: string;
+  count: number;
+}
+
+export interface AdminStats {
+  totalPartners: number;
+  activatedPartners: number;
+  activationRate: number;
+  avgMilestoneCompletionRate: number;
+  partnersCompletedProgram: number;
+  avgTimeToFirstSaleDays: number | null;
+  partnersRegisteredByWeek: WeeklyCount[];
+}

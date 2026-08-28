@@ -7,7 +7,7 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-2 px-6 py-4">
         <Link
-          href="/dashboard"
+          href={profile?.role === "admin" ? "/admin/dashboard" : "/dashboard"}
           className="text-sm font-semibold tracking-tight text-ink"
         >
           kaspersky
@@ -15,13 +15,15 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
         </Link>
 
         <nav className="flex items-center gap-1 text-sm">
-          <NavLink href="/dashboard">Dashboard</NavLink>
-          {profile?.role === "admin" && (
+          {profile?.role === "admin" ? (
             <>
+              <NavLink href="/admin/dashboard">Dashboard</NavLink>
               <NavLink href="/admin/partners">Parceiros</NavLink>
               <NavLink href="/admin/evidence">Evidências</NavLink>
               <NavLink href="/admin/rewards">Recompensas</NavLink>
             </>
+          ) : (
+            <NavLink href="/dashboard">Dashboard</NavLink>
           )}
           <LogoutButton />
         </nav>
