@@ -14,6 +14,11 @@ npm run dev            # http://localhost:3000
 Necesita el backend corriendo en paralelo (`../backend`, ver su README) — la mayoría de las
 páginas hacen fetch server-side contra `BACKEND_URL`.
 
+## Documentación de producto
+
+`docs/guia-de-uso.html` — guía de uso para el equipo Kaspersky (administradores y parceiros),
+no técnica. Abrir directo en el navegador.
+
 ## Variables de entorno (`.env`)
 
 | Variable | Descripción |

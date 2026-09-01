@@ -1,0 +1,531 @@
+<title>Guia do Programa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap">
+
+<style>
+  :root {
+    --brand: #1da189;
+    --brand-hover: #178572;
+    --brand-soft: #e7f4f1;
+    --ink: #1d1d1b;
+    --ink-muted: #6b6f6d;
+    --canvas: #f4f6f5;
+    --surface: #ffffff;
+    --border: #e6e8e7;
+    --pastel-green-bg: #edf3ec;
+    --pastel-green-text: #346538;
+    --pastel-yellow-bg: #fbf3db;
+    --pastel-yellow-text: #956400;
+    --pastel-red-bg: #fdebec;
+    --pastel-red-text: #9f2f2d;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: -apple-system, "system-ui", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --brand: #2bc4a5;
+      --brand-hover: #45d1b4;
+      --brand-soft: #113029;
+      --ink: #eef1f0;
+      --ink-muted: #9aa39f;
+      --canvas: #141a18;
+      --surface: #1b2320;
+      --border: #2a332f;
+      --pastel-green-bg: #16301d;
+      --pastel-green-text: #7fd696;
+      --pastel-yellow-bg: #362a0d;
+      --pastel-yellow-text: #e8bd63;
+      --pastel-red-bg: #3a1414;
+      --pastel-red-text: #f0908c;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --brand: #2bc4a5;
+    --brand-hover: #45d1b4;
+    --brand-soft: #113029;
+    --ink: #eef1f0;
+    --ink-muted: #9aa39f;
+    --canvas: #141a18;
+    --surface: #1b2320;
+    --border: #2a332f;
+    --pastel-green-bg: #16301d;
+    --pastel-green-text: #7fd696;
+    --pastel-yellow-bg: #362a0d;
+    --pastel-yellow-text: #e8bd63;
+    --pastel-red-bg: #3a1414;
+    --pastel-red-text: #f0908c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--brand); }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .top-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .wordmark span {
+    font-weight: 400;
+    color: var(--ink-muted);
+    margin-left: 4px;
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+
+  nav.tabs a {
+    text-decoration: none;
+    color: var(--ink-muted);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  nav.tabs a:hover { color: var(--ink); }
+  nav.tabs a.active {
+    background: var(--brand);
+    color: white;
+  }
+
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  .intro {
+    margin-bottom: 56px;
+  }
+
+  .intro .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brand);
+    margin-bottom: 12px;
+  }
+
+  .intro h1 {
+    font-size: clamp(30px, 4.5vw, 42px);
+    margin: 0 0 14px;
+    line-height: 1.12;
+  }
+
+  .intro p {
+    font-size: 16px;
+    color: var(--ink-muted);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  section.audience {
+    margin-bottom: 72px;
+    scroll-margin-top: 90px;
+  }
+
+  section.audience > .heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  section.audience > .heading h2 {
+    font-size: 24px;
+    margin: 0;
+  }
+
+  section.audience > .heading .who {
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+
+  .task {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 26px;
+    margin-bottom: 16px;
+  }
+
+  .task h3 {
+    font-size: 17px;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .task h3 .num {
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--brand-soft);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .task p {
+    margin: 0 0 10px;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .task p:last-child { margin-bottom: 0; }
+  .task p.note {
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+
+  .task ol, .task ul {
+    margin: 0 0 10px;
+    padding-left: 20px;
+    font-size: 14.5px;
+  }
+  .task li { margin-bottom: 6px; }
+  .task li:last-child { margin-bottom: 0; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--brand);
+    color: white;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .chip.ghost {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .navlabel {
+    display: inline-flex;
+    align-items: center;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+
+  .status-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .status {
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 3px 11px;
+    border-radius: 999px;
+  }
+  .status.pending { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
+  .status.approved { background: var(--pastel-green-bg); color: var(--pastel-green-text); }
+  .status.rejected { background: var(--pastel-red-bg); color: var(--pastel-red-text); }
+
+  .callout {
+    border-left: 3px solid var(--brand);
+    background: var(--brand-soft);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-top: 12px;
+  }
+  .callout strong { color: var(--brand-hover); }
+
+  .journey {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 14px 0 4px;
+  }
+  .journey .node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .journey .node.done { background: var(--pastel-green-text); }
+  .journey .node.locked { background: var(--border); color: var(--ink-muted); }
+  .journey .arrow { color: var(--border); font-size: 14px; }
+  .journey .label {
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: block;
+    text-align: center;
+    margin-top: 4px;
+    width: 62px;
+  }
+  .journey-wrap { display: flex; flex-direction: column; }
+  .journey-item { display: flex; flex-direction: column; align-items: center; }
+  .journey-row { display: flex; align-items: center; gap: 4px; }
+
+  table.emails {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 8px;
+  }
+  table.emails th, table.emails td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.emails th {
+    color: var(--ink-muted);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.emails tr:last-child td { border-bottom: none; }
+  .emails-wrap { overflow-x: auto; }
+
+  footer.page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+    color: var(--ink-muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 600px) {
+    .top-inner { flex-direction: column; align-items: flex-start; }
+    nav.tabs { width: 100%; }
+    nav.tabs a { flex: 1; text-align: center; }
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="wordmark">kaspersky<span>| partner activation program</span></div>
+    <nav class="tabs">
+      <a href="#admin" id="tab-admin" class="active">Administradores</a>
+      <a href="#parceiro" id="tab-parceiro">Parceiros</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="intro">
+    <div class="eyebrow">Guia de uso</div>
+    <h1>Como usar o Partner Activation Program</h1>
+    <p>
+      Um guia direto para as duas pessoas que usam a plataforma no dia a dia: o time
+      Kaspersky que administra o programa, e o parceiro que percorre as missões até a
+      primeira venda.
+    </p>
+  </div>
+
+  <section class="audience" id="admin">
+    <div class="heading">
+      <h2>Para administradores</h2>
+      <span class="who">Time Kaspersky / ISOURCE</span>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">1</span>Convidar um parceiro</h3>
+      <p>Em <span class="navlabel">Parceiros</span>, clique em <span class="chip">Convidar parceiro</span> e preencha e-mail, nome e empresa.</p>
+      <ol>
+        <li>O parceiro recebe um e-mail de boas-vindas da plataforma e, separadamente, um link de acesso do Supabase para entrar pela primeira vez.</li>
+        <li>Não é preciso definir senha — o acesso é sempre por link de e-mail ou login com Google.</li>
+      </ol>
+      <div class="callout">Um e-mail já cadastrado não pode ser convidado de novo — a plataforma avisa se isso acontecer.</div>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">2</span>Revisar evidências</h3>
+      <p>Em <span class="navlabel">Evidências</span> aparece a fila de tudo que está aguardando revisão. Cada card mostra o parceiro, a missão, a tarefa, e o arquivo ou texto enviado.</p>
+      <div class="status-row">
+        <span class="status pending">Em análise</span>
+        <span class="status approved">Aprovado</span>
+        <span class="status rejected">Rejeitado</span>
+      </div>
+      <ol>
+        <li>Abra o arquivo enviado (quando houver) clicando em <em>Ver arquivo enviado</em>.</li>
+        <li>Escreva uma nota se for rejeitar — o parceiro vê essa nota e pode reenviar.</li>
+        <li>Clique em <span class="chip">Aprovar</span> ou <span class="chip ghost">Rejeitar</span>.</li>
+      </ol>
+      <div class="callout"><strong>Atenção:</strong> uma evidência aprovada não pode ser reenviada pelo parceiro — se for necessário corrigir algo depois de aprovado, é preciso ajustar direto no banco de dados.</div>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">3</span>Ver o histórico completo de um parceiro</h3>
+      <p>Clique no nome do parceiro dentro de <span class="navlabel">Parceiros</span> para abrir o perfil dele — dados de cadastro e a lista completa de evidências já enviadas, com status e notas de revisão de cada uma, incluindo as antigas.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">4</span>Gerenciar recompensas</h3>
+      <p>Em <span class="navlabel">Recompensas</span>, o <strong>Catálogo</strong> é onde se cadastra cada reward: título, tipo (físico, digital ou misto) e a qual missão ele fica associado — o parceiro só vê o reward depois de concluir essa missão.</p>
+      <p>Abaixo, <strong>Solicitações de resgate</strong> mostra os pedidos dos parceiros para aprovar, rejeitar ou marcar como entregue.</p>
+      <div class="callout">A logística de entrega do prêmio físico acontece fora da plataforma — aqui só se controla o status do pedido.</div>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">5</span>Acompanhar os indicadores</h3>
+      <p>Em <span class="navlabel">Dashboard</span>: taxa de ativação, taxa de finalização de missões e tempo médio até a primeira venda, além do gráfico de novos parceiros por semana.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">6</span>Exportar dados</h3>
+      <p>As listas de <strong>Parceiros</strong>, <strong>Evidências</strong> e <strong>Recompensas</strong> têm um botão <span class="chip ghost">↓ Exportar CSV</span> que baixa a lista completa, pronta para abrir no Excel ou Google Sheets.</p>
+    </div>
+  </section>
+
+  <section class="audience" id="parceiro">
+    <div class="heading">
+      <h2>Para parceiros</h2>
+      <span class="who">Canal Kaspersky</span>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">1</span>Como entrar</h3>
+      <p>Depois de cadastrado pela Kaspersky, você recebe um e-mail com um link de acesso — não existe senha para lembrar. Também é possível entrar com sua conta Google.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">2</span>O mapa de missões</h3>
+      <p>O painel mostra as 5 missões do programa como um caminho — clique em qualquer missão desbloqueada para ver e enviar as tarefas dela.</p>
+      <div class="journey-wrap">
+        <div class="journey-row">
+          <div class="journey-item"><div class="node done">✓</div></div>
+          <span class="arrow">—</span>
+          <div class="journey-item"><div class="node">2</div></div>
+          <span class="arrow">—</span>
+          <div class="journey-item"><div class="node locked">🔒</div></div>
+          <span class="arrow">—</span>
+          <div class="journey-item"><div class="node locked">🔒</div></div>
+          <span class="arrow">—</span>
+          <div class="journey-item"><div class="node locked">🔒</div></div>
+        </div>
+      </div>
+      <p class="note">Concluída · Em andamento · Bloqueadas — as missões abrem uma de cada vez, na ordem.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">3</span>Enviar uma evidência</h3>
+      <p>Cada tarefa pede um arquivo (PDF, JPG ou PNG) — certificado, print ou documento que comprove a atividade. Escolha o arquivo e clique em <span class="chip">Enviar</span>.</p>
+      <div class="status-row">
+        <span class="status pending">Em análise</span>
+        <span class="status approved">Aprovado</span>
+        <span class="status rejected">Rejeitado</span>
+      </div>
+      <p class="note">Se for rejeitada, a nota do time explica o motivo e a tarefa libera o envio de novo.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">4</span>Recompensas</h3>
+      <p>Ao concluir uma missão, os rewards associados a ela aparecem no seu painel com o botão <span class="chip">Solicitar</span>. Depois de solicitar, acompanhe o status ali mesmo.</p>
+    </div>
+
+    <div class="task">
+      <h3><span class="num">5</span>E-mails que você vai receber</h3>
+      <div class="emails-wrap">
+        <table class="emails">
+          <tr><th>Quando</th><th>O quê</th></tr>
+          <tr><td>Ao ser cadastrado</td><td>Boas-vindas ao programa</td></tr>
+          <tr><td>Ao enviar uma evidência</td><td>Confirmação de recebimento</td></tr>
+          <tr><td>Ao concluir uma missão</td><td>Parabéns pela missão concluída</td></tr>
+          <tr><td>7 dias sem enviar nada</td><td>Lembrete de tarefa pendente</td></tr>
+          <tr><td>Ao solicitar um reward</td><td>Atualização de status (aprovado / rejeitado / entregue)</td></tr>
+          <tr><td>Ao concluir as 5 missões</td><td>Reconhecimento de fim de programa</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="page">
+  Partner Activation Program — Kaspersky × ISOURCE Marketing.
+</footer>
+
+<script>
+  const tabAdmin = document.getElementById('tab-admin');
+  const tabParceiro = document.getElementById('tab-parceiro');
+  const sections = { admin: document.getElementById('admin'), parceiro: document.getElementById('parceiro') };
+
+  function setActive(id) {
+    tabAdmin.classList.toggle('active', id === 'admin');
+    tabParceiro.classList.toggle('active', id === 'parceiro');
+  }
+
+  tabAdmin.addEventListener('click', () => setActive('admin'));
+  tabParceiro.addEventListener('click', () => setActive('parceiro'));
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-40% 0px -50% 0px' });
+
+  Object.values(sections).forEach((el) => observer.observe(el));
+</script>
