@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
+import { ExportCsvButton } from "@/components/export-csv-button";
+import type { CsvColumn } from "@/lib/csv";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -42,6 +44,16 @@ export default async function AdminPartnersListPage() {
 
   const partners = await getPartners(session.access_token);
 
+  const columns: CsvColumn<PartnerProfile>[] = [
+    { header: "Nome", accessor: (p) => p.full_name ?? "" },
+    { header: "E-mail", accessor: (p) => p.email },
+    { header: "Empresa", accessor: (p) => p.company_name ?? "" },
+    {
+      header: "Convidado em",
+      accessor: (p) => new Date(p.created_at).toLocaleDateString("pt-BR"),
+    },
+  ];
+
   return (
     <>
       <Navbar profile={profile} />
@@ -56,12 +68,19 @@ export default async function AdminPartnersListPage() {
             </p>
           </div>
 
-          <Link
-            href="/admin/partners/invite"
-            className="shrink-0 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
-          >
-            Convidar parceiro
-          </Link>
+          <div className="flex shrink-0 gap-2">
+            <ExportCsvButton
+              filename="parceiros.csv"
+              rows={partners}
+              columns={columns}
+            />
+            <Link
+              href="/admin/partners/invite"
+              className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+            >
+              Convidar parceiro
+            </Link>
+          </div>
         </div>
 
         {partners.length === 0 ? (
