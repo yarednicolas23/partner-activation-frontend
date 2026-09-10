@@ -2,37 +2,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile, RedemptionQueueItem, Reward } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
-import { ExportCsvButton } from "@/components/export-csv-button";
-import type { CsvColumn } from "@/lib/csv";
+import { RedemptionsExportButton } from "./export-button";
 import { RewardsCatalog } from "./rewards-catalog";
 import { RedemptionQueue } from "./redemption-queue";
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pendente",
-  approved: "Aprovado",
-  rejected: "Rejeitado",
-  fulfilled: "Entregue",
-};
-
-const redemptionColumns: CsvColumn<RedemptionQueueItem>[] = [
-  {
-    header: "Parceiro",
-    accessor: (r) => r.partner.full_name ?? r.partner.email,
-  },
-  { header: "E-mail", accessor: (r) => r.partner.email },
-  { header: "Reward", accessor: (r) => r.reward.title },
-  { header: "Status", accessor: (r) => STATUS_LABEL[r.status] ?? r.status },
-  {
-    header: "Solicitado em",
-    accessor: (r) => new Date(r.requested_at).toLocaleString("pt-BR"),
-  },
-  {
-    header: "Revisado em",
-    accessor: (r) =>
-      r.reviewed_at ? new Date(r.reviewed_at).toLocaleString("pt-BR") : "",
-  },
-  { header: "Nota", accessor: (r) => r.admin_note ?? "" },
-];
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -127,11 +99,7 @@ export default async function AdminRewardsPage() {
           <h2 className="text-lg font-semibold tracking-tight text-ink">
             Solicitações de resgate
           </h2>
-          <ExportCsvButton
-            filename="resgates.csv"
-            rows={redemptions}
-            columns={redemptionColumns}
-          />
+          <RedemptionsExportButton rows={redemptions} />
         </div>
         <RedemptionQueue initialItems={redemptions} />
       </main>
