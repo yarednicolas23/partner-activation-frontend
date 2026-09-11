@@ -23,7 +23,10 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
               <NavLink href="/admin/rewards">Recompensas</NavLink>
             </>
           ) : (
-            <NavLink href="/dashboard">Dashboard</NavLink>
+            <>
+              <NavLink href="/dashboard">Dashboard</NavLink>
+              <NavLink href="/dashboard/historico">Histórico</NavLink>
+            </>
           )}
           <LogoutButton />
         </nav>
