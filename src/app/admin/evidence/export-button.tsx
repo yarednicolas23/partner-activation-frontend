@@ -7,7 +7,7 @@ import type { EvidenceQueueItem } from "@/lib/types";
 const STATUS_LABEL: Record<string, string> = {
   pending: "Em análise",
   approved: "Aprovado",
-  rejected: "Rejeitado",
+  rejected: "Não aprovado",
 };
 
 const columns: CsvColumn<EvidenceQueueItem>[] = [

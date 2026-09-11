@@ -128,7 +128,7 @@ function EvidenceCard({
           disabled={status === "loading"}
           className="rounded-md border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-pastel-red-bg disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Rejeitar
+          Não aprovado
         </button>
       </div>
     </div>
