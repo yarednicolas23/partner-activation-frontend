@@ -110,7 +110,7 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
                 status={statusOf(milestone)}
                 point={points[i]}
                 selected={milestone.id === selectedId}
-                onSelect={() => !milestone.locked && setSelectedId(milestone.id)}
+                onSelect={() => setSelectedId(milestone.id)}
                 delay={i * 0.08}
               />
             ))}
@@ -127,16 +127,25 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
                 <h3 className="mb-1 text-base font-semibold text-ink">
                   {selected.order_index}. {selected.title}
                 </h3>
-                {selected.description && (
-                  <p className="mb-4 text-sm text-ink-muted">
-                    {selected.description}
+                {selected.locked ? (
+                  <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+                    <LockIcon />
+                    Conclua a etapa anterior para desbloquear esta etapa.
                   </p>
+                ) : (
+                  <>
+                    {selected.description && (
+                      <p className="mb-4 text-sm text-ink-muted">
+                        {selected.description}
+                      </p>
+                    )}
+                    <div className="space-y-3">
+                      {selected.tasks?.map((task: TaskWithEvidence) => (
+                        <TaskRow key={task.id} task={task} />
+                      ))}
+                    </div>
+                  </>
                 )}
-                <div className="space-y-3">
-                  {selected.tasks?.map((task: TaskWithEvidence) => (
-                    <TaskRow key={task.id} task={task} />
-                  ))}
-                </div>
               </motion.div>
             ) : (
               <p className="text-sm text-ink-muted">
@@ -175,11 +184,14 @@ function MilestoneNode({
     <motion.button
       type="button"
       onClick={onSelect}
-      disabled={status === "locked"}
-      title={milestone.locked ? `Etapa ${milestone.order_index} — bloqueada` : milestone.title}
-      className={`absolute flex items-center justify-center rounded-full text-sm font-semibold shadow-sm transition ${statusClass[status]} ${
-        status === "locked" ? "cursor-not-allowed" : "cursor-pointer"
-      } ${selected ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""}`}
+      title={
+        milestone.locked
+          ? `${milestone.order_index}. ${milestone.title} — bloqueada`
+          : milestone.title
+      }
+      className={`absolute flex cursor-pointer items-center justify-center rounded-full text-sm font-semibold shadow-sm transition ${statusClass[status]} ${
+        selected ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""
+      }`}
       style={{
         width: NODE_SIZE,
         height: NODE_SIZE,
@@ -189,8 +201,8 @@ function MilestoneNode({
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.35, delay, type: "spring", stiffness: 260, damping: 18 }}
-      whileHover={status !== "locked" ? { scale: 1.08 } : undefined}
-      whileTap={status !== "locked" ? { scale: 0.96 } : undefined}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.96 }}
     >
       {status === "locked" && <LockIcon />}
       {status === "completed" && <CheckIcon />}
