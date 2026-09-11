@@ -12,6 +12,9 @@ export function LoginForm() {
   const [googleStatus, setGoogleStatus] = useState<"idle" | "redirecting" | "error">(
     "idle",
   );
+  const [microsoftStatus, setMicrosoftStatus] = useState<
+    "idle" | "redirecting" | "error"
+  >("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,6 +43,20 @@ export function LoginForm() {
     });
 
     if (error) setGoogleStatus("error");
+  }
+
+  async function handleMicrosoftSignIn() {
+    setMicrosoftStatus("redirecting");
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "azure",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) setMicrosoftStatus("error");
   }
 
   if (status === "sent") {
@@ -105,6 +122,24 @@ export function LoginForm() {
           Não foi possível iniciar o login com Google. Tente novamente.
         </p>
       )}
+
+      <button
+        type="button"
+        onClick={handleMicrosoftSignIn}
+        disabled={microsoftStatus === "redirecting"}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-brand-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <MicrosoftIcon />
+        {microsoftStatus === "redirecting"
+          ? "Redirecionando..."
+          : "Continuar com Microsoft"}
+      </button>
+
+      {microsoftStatus === "error" && (
+        <p className="text-sm text-pastel-red-text">
+          Não foi possível iniciar o login com Microsoft. Tente novamente.
+        </p>
+      )}
     </form>
   );
 }
@@ -128,6 +163,17 @@ function GoogleIcon() {
         fill="#EA4335"
         d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58Z"
       />
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+      <rect x="0" y="0" width="8.5" height="8.5" fill="#F25022" />
+      <rect x="9.5" y="0" width="8.5" height="8.5" fill="#7FBA00" />
+      <rect x="0" y="9.5" width="8.5" height="8.5" fill="#00A4EF" />
+      <rect x="9.5" y="9.5" width="8.5" height="8.5" fill="#FFB900" />
     </svg>
   );
 }
