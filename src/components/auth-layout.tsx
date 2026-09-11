@@ -13,7 +13,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-10 text-sm font-semibold tracking-tight text-ink">
             kaspersky
-            <span className="ml-1 font-normal text-ink-muted">| partners</span>
+            <span className="ml-1 font-normal text-ink-muted">| partner quest</span>
           </div>
           {children}
         </div>

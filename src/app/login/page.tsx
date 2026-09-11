@@ -3,7 +3,7 @@ import { AuthLayout } from "@/components/auth-layout";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Entrar | Partner Activation Program",
+  title: "Entrar | Kaspersky Partner Quest",
 };
 
 export default function LoginPage() {

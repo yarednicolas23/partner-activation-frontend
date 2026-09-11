@@ -16,7 +16,7 @@ const columns: CsvColumn<EvidenceQueueItem>[] = [
     accessor: (e) => e.partner.full_name ?? e.partner.email,
   },
   { header: "E-mail", accessor: (e) => e.partner.email },
-  { header: "Milestone", accessor: (e) => e.milestone.title },
+  { header: "Etapa", accessor: (e) => e.milestone.title },
   { header: "Tarefa", accessor: (e) => e.task.title },
   { header: "Status", accessor: (e) => STATUS_LABEL[e.status] ?? e.status },
   {

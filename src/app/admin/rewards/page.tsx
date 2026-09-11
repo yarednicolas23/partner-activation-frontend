@@ -87,7 +87,7 @@ export default async function AdminRewardsPage() {
         </h2>
         {milestones.length === 0 ? (
           <p className="mb-8 text-sm text-ink-muted">
-            Nenhum milestone cadastrado ainda.
+            Nenhuma etapa cadastrada ainda.
           </p>
         ) : (
           <div className="mb-8">

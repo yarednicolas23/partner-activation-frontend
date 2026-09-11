@@ -176,7 +176,7 @@ function MilestoneNode({
       type="button"
       onClick={onSelect}
       disabled={status === "locked"}
-      title={milestone.locked ? `Milestone ${milestone.order_index} — bloqueado` : milestone.title}
+      title={milestone.locked ? `Etapa ${milestone.order_index} — bloqueada` : milestone.title}
       className={`absolute flex items-center justify-center rounded-full text-sm font-semibold shadow-sm transition ${statusClass[status]} ${
         status === "locked" ? "cursor-not-allowed" : "cursor-pointer"
       } ${selected ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""}`}

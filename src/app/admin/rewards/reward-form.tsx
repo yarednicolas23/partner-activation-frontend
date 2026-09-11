@@ -124,7 +124,7 @@ export function RewardForm({
 
       <div>
         <label htmlFor="milestoneId" className="mb-1.5 block text-sm font-medium text-ink">
-          Milestone necessário
+          Etapa necessária
         </label>
         <select
           id="milestoneId"

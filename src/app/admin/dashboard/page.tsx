@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
           Dashboard
         </h1>
         <p className="mb-8 text-sm text-ink-muted">
-          KPIs do Partner Activation Program.
+          KPIs do Kaspersky Partner Quest.
         </p>
 
         {!stats ? (
@@ -69,7 +69,7 @@ export default async function AdminDashboardPage() {
                 detail={`${stats.activatedPartners} de ${stats.totalPartners} parceiros`}
               />
               <KpiCard
-                label="Finalização de milestones"
+                label="Finalização de etapas"
                 value={formatPercent(stats.avgMilestoneCompletionRate)}
                 detail="Média entre todos os parceiros"
               />
