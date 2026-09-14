@@ -10,8 +10,8 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
           href={profile?.role === "admin" ? "/admin/dashboard" : "/dashboard"}
           className="text-sm font-semibold tracking-tight text-ink"
         >
-          kaspersky
-          <span className="ml-1 font-normal text-ink-muted">| partner quest</span>
+          KASPERSKY
+          <span className="ml-1 font-normal text-ink-muted">| PARTNER QUEST</span>
         </Link>
 
         <nav className="flex items-center gap-1 text-sm">
