@@ -1,231 +1,224 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import type { MilestoneView, TaskWithEvidence } from "@/lib/types";
 import { TaskRow } from "./task-row";
+import {
+  isMilestoneComplete,
+  stageImageSrc,
+  stageTaskProgress,
+  stageVisualStatus,
+  type StageVisualStatus,
+} from "./stage-art";
 
-type NodeStatus = "locked" | "current" | "completed";
+const STAGE_GAP = 14;
 
-const NODE_SIZE = 56;
-const ROW_HEIGHT = 108;
-// Zigzag horizontal, alternando de lado — look "trilha" tipo Duolingo sem
-// precisar de arte isométrica custom (ver discussão de escopo do Dashboard
-// do Sócio).
-const X_OFFSETS = [0, 64, -64, 64, 0];
-
-function isMilestoneComplete(milestone: MilestoneView): boolean {
-  const requiredTasks = (milestone.tasks ?? []).filter(
-    (t) => t.evidence_type !== "none",
-  );
-  return (
-    requiredTasks.length > 0 &&
-    requiredTasks.every((t) => t.evidence?.status === "approved")
-  );
-}
-
-function statusOf(milestone: MilestoneView): NodeStatus {
-  if (milestone.locked) return "locked";
-  return isMilestoneComplete(milestone) ? "completed" : "current";
-}
+const BADGE_CLASS: Record<StageVisualStatus, string> = {
+  locked: "bg-surface text-ink-muted ring-2 ring-border",
+  base: "bg-brand text-white ring-4 ring-brand-soft",
+  review: "bg-pastel-yellow-text text-white ring-4 ring-pastel-yellow-bg",
+  alert: "bg-pastel-red-text text-white ring-4 ring-pastel-red-bg",
+  completed: "bg-pastel-green-text text-white ring-2 ring-transparent",
+};
 
 export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
-  const completedCount = milestones.filter(
-    (m) => !m.locked && isMilestoneComplete(m),
-  ).length;
-
   const defaultSelected = useMemo(() => {
-    const inProgress = milestones.find((m) => statusOf(m) === "current");
+    const inProgress = milestones.find((m) => stageVisualStatus(m) !== "locked" && stageVisualStatus(m) !== "completed");
     return (inProgress ?? milestones[0])?.id ?? null;
   }, [milestones]);
 
   const [selectedId, setSelectedId] = useState<string | null>(defaultSelected);
   const selected = milestones.find((m) => m.id === selectedId) ?? null;
 
-  const width = 240;
-  const centerX = width / 2;
-  const points = milestones.map((m, i) => ({
-    x: centerX + X_OFFSETS[i % X_OFFSETS.length],
-    y: NODE_SIZE / 2 + i * ROW_HEIGHT,
-  }));
-  const height = points.length > 0 ? points[points.length - 1].y + NODE_SIZE / 2 : 0;
-
-  const pathD = points
-    .map((p, i) => {
-      if (i === 0) return `M ${p.x} ${p.y}`;
-      const prev = points[i - 1];
-      const midY = (prev.y + p.y) / 2;
-      return `C ${prev.x} ${midY}, ${p.x} ${midY}, ${p.x} ${p.y}`;
-    })
-    .join(" ");
-
   return (
-    <div className="mt-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight text-ink">Missões</h2>
-        <span className="text-sm text-ink-muted">
-          {completedCount}/{milestones.length} concluídas
-        </span>
+    <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Sua jornada</h2>
       </div>
 
-      <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-border">
-        <motion.div
-          className="h-full rounded-full bg-brand"
-          initial={{ width: 0 }}
-          animate={{
-            width: `${milestones.length > 0 ? (completedCount / milestones.length) * 100 : 0}%`,
-          }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        />
-      </div>
-
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
+      <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-0 sm:overflow-visible sm:px-0">
+        <div className="relative min-w-[640px] sm:min-w-0 [--stage-w:96px] sm:[--stage-w:132px] lg:[--stage-w:168px]">
+          {/* Linha contínua atrás dos badges — um segmento por transição entre etapas. */}
           <div
-            className="relative mx-auto shrink-0"
-            style={{ width, height: height || undefined }}
+            className="pointer-events-none absolute inset-x-0"
+            style={{ top: `calc(var(--stage-w) + ${STAGE_GAP}px)` }}
           >
-            <svg
-              width={width}
-              height={height}
-              className="absolute inset-0"
-              aria-hidden="true"
-            >
-              <motion.path
-                d={pathD}
-                fill="none"
-                stroke="var(--color-border)"
-                strokeWidth={3}
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-              />
-            </svg>
+            <div className="relative h-[3px] -translate-y-1/2">
+              {milestones.slice(0, -1).map((milestone, i) => {
+                const n = milestones.length;
+                const left = ((i + 0.5) / n) * 100;
+                const width = (1 / n) * 100;
+                return (
+                  <motion.div
+                    key={milestone.id}
+                    className={`absolute top-0 h-full rounded-full ${
+                      isMilestoneComplete(milestone) ? "bg-brand" : "bg-border"
+                    }`}
+                    style={{ left: `${left}%`, width: `${width}%`, transformOrigin: "left" }}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease: "easeOut" }}
+                  />
+                );
+              })}
+            </div>
+          </div>
 
+          <div
+            className="grid"
+            style={{ gridTemplateColumns: `repeat(${milestones.length}, minmax(0, 1fr))` }}
+          >
             {milestones.map((milestone, i) => (
-              <MilestoneNode
+              <StageColumn
                 key={milestone.id}
                 milestone={milestone}
-                status={statusOf(milestone)}
-                point={points[i]}
                 selected={milestone.id === selectedId}
                 onSelect={() => setSelectedId(milestone.id)}
                 delay={i * 0.08}
               />
             ))}
           </div>
-
-          <div className="min-w-0">
-            {selected ? (
-              <motion.div
-                key={selected.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="mb-1 text-base font-semibold text-ink">
-                  {selected.order_index}. {selected.title}
-                </h3>
-                {selected.locked ? (
-                  <p className="flex items-center gap-1.5 text-sm text-ink-muted">
-                    <LockIcon />
-                    Conclua a etapa anterior para desbloquear esta etapa.
-                  </p>
-                ) : (
-                  <>
-                    {selected.description && (
-                      <p className="mb-4 text-sm text-ink-muted">
-                        {selected.description}
-                      </p>
-                    )}
-                    <div className="space-y-3">
-                      {selected.tasks?.map((task: TaskWithEvidence) => (
-                        <TaskRow key={task.id} task={task} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            ) : (
-              <p className="text-sm text-ink-muted">
-                Nenhuma missão desbloqueada ainda.
-              </p>
-            )}
-          </div>
         </div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {selected && (
+          <motion.div
+            key={selected.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="mt-8 border-t border-border pt-6"
+          >
+            <h3 className="mb-1 text-base font-semibold text-ink">
+              {selected.order_index}. {selected.locked ? "Etapa bloqueada" : selected.title}
+            </h3>
+            {selected.locked ? (
+              <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+                <LockIcon />
+                Conclua a etapa anterior para desbloquear esta etapa.
+              </p>
+            ) : (
+              <>
+                {selected.description && (
+                  <p className="mb-4 text-sm text-ink-muted">{selected.description}</p>
+                )}
+                <div className="space-y-3">
+                  {selected.tasks?.map((task: TaskWithEvidence) => (
+                    <TaskRow key={task.id} task={task} />
+                  ))}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function MilestoneNode({
+function StageColumn({
   milestone,
-  status,
-  point,
   selected,
   onSelect,
   delay,
 }: {
   milestone: MilestoneView;
-  status: NodeStatus;
-  point: { x: number; y: number };
   selected: boolean;
   onSelect: () => void;
   delay: number;
 }) {
-  const statusClass: Record<NodeStatus, string> = {
-    locked: "bg-border text-ink-muted",
-    current: "bg-brand text-white",
-    completed: "bg-pastel-green-text text-white",
-  };
+  const [hovered, setHovered] = useState(false);
+  const status = stageVisualStatus(milestone);
+  const progress = stageTaskProgress(milestone);
+  const showHover = hovered && status === "base";
 
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       title={
         milestone.locked
-          ? `${milestone.order_index}. ${milestone.title} — bloqueada`
-          : milestone.title
+          ? `Etapa ${milestone.order_index} — bloqueada`
+          : `${milestone.order_index}. ${milestone.title}`
       }
-      className={`absolute flex cursor-pointer items-center justify-center rounded-full text-sm font-semibold shadow-sm transition ${statusClass[status]} ${
-        selected ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""
-      }`}
-      style={{
-        width: NODE_SIZE,
-        height: NODE_SIZE,
-        left: point.x - NODE_SIZE / 2,
-        top: point.y - NODE_SIZE / 2,
-      }}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.35, delay, type: "spring", stiffness: 260, damping: 18 }}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.96 }}
+      className="flex cursor-pointer flex-col items-center px-1 text-center"
     >
-      {status === "locked" && <LockIcon />}
-      {status === "completed" && <CheckIcon />}
-      {status === "current" && (
-        <>
-          <span>{milestone.order_index}</span>
-          <motion.span
-            className="absolute inset-0 rounded-full bg-brand"
-            animate={{ opacity: [0.5, 0, 0.5], scale: [1, 1.35, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            style={{ zIndex: -1 }}
-          />
-        </>
-      )}
-    </motion.button>
+      <motion.div
+        className="relative mx-auto"
+        style={{ width: "var(--stage-w)", height: "var(--stage-w)" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: hovered && status === "base" ? -4 : 0 }}
+        transition={{ opacity: { duration: 0.4, delay }, y: { duration: 0.18 } }}
+      >
+        <Image
+          src={stageImageSrc(milestone.order_index, showHover ? "hover" : status)}
+          alt=""
+          fill
+          sizes="200px"
+          className="object-contain drop-shadow-sm"
+          priority={milestone.order_index <= 2}
+        />
+      </motion.div>
+
+      <div style={{ height: STAGE_GAP }} />
+
+      <div
+        className={`relative z-10 -mt-4 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold shadow-sm transition ${BADGE_CLASS[status]} ${
+          selected ? "outline outline-2 outline-offset-2 outline-ink/20" : ""
+        }`}
+      >
+        {status === "locked" && <LockIcon />}
+        {status === "completed" && <CheckIcon />}
+        {status === "review" && <ClockIcon />}
+        {status === "alert" && <AlertIcon />}
+        {status === "base" && <span>{progress.percent}%</span>}
+      </div>
+
+      <div className="mt-3 space-y-0.5">
+        <p className="text-xs text-ink-muted">
+          Etapa {milestone.order_index} de 5
+        </p>
+        <p className="text-sm font-semibold text-ink">
+          {milestone.locked ? (
+            <span className="inline-flex items-center gap-1 text-ink-muted">
+              <LockIcon /> Bloqueada
+            </span>
+          ) : (
+            milestone.title
+          )}
+        </p>
+        {!milestone.locked && progress.total > 0 && (
+          <p className="text-xs text-ink-muted">
+            {progress.completed} de {progress.total} missões
+          </p>
+        )}
+        {status === "completed" && (
+          <p className="flex items-center justify-center gap-1 text-xs font-medium text-pastel-green-text">
+            <CheckIcon small /> Concluída
+          </p>
+        )}
+        {status === "review" && (
+          <p className="text-xs font-medium text-pastel-yellow-text">Em análise</p>
+        )}
+        {status === "alert" && (
+          <p className="text-xs font-medium text-pastel-red-text">Requer atenção</p>
+        )}
+      </div>
+    </button>
   );
 }
 
 function LockIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="14"
+      height="14"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -240,20 +233,60 @@ function LockIcon() {
   );
 }
 
-function CheckIcon() {
+function CheckIcon({ small }: { small?: boolean }) {
+  const size = small ? 12 : 16;
   return (
     <svg
-      width="22"
-      height="22"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
       <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 9v4" />
+      <path d="M10.3 3.9 1.8 18a1.5 1.5 0 0 0 1.3 2.3h17.8a1.5 1.5 0 0 0 1.3-2.3L13.7 3.9a1.5 1.5 0 0 0-2.6 0Z" />
+      <path d="M12 17h.01" />
     </svg>
   );
 }

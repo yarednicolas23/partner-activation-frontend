@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { JourneyMap } from "./journey-map";
+import { ProgressSummary } from "./progress-summary";
 import { RewardsSection } from "./rewards-section";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -77,41 +78,43 @@ export default async function DashboardPage() {
   return (
     <>
       <Navbar profile={profile} />
-      <main className="mx-auto w-full max-w-3xl px-6 py-16">
-        <div className="mb-8">
-          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-            Olá{profile?.full_name ? `, ${profile.full_name}` : ""}
-          </h1>
-          <p className="text-sm text-ink-muted">{session.user.email}</p>
+      <main className="mx-auto w-full max-w-6xl px-6 py-10 sm:py-14">
+        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
+              Olá{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""} 👋
+            </h1>
+            <p className="text-sm text-ink-muted">
+              {isPartner ? "Continue de onde você parou." : session.user.email}
+            </p>
+            {profile?.company_name && (
+              <p className="mt-1 text-sm text-ink-muted">{profile.company_name}</p>
+            )}
+          </div>
+
+          {isPartner && (
+            <ProgressSummary milestones={milestones} registeredAt={profile.created_at} />
+          )}
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          {profile ? (
-            <dl className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-ink-muted">Empresa</dt>
-                <dd className="text-ink">{profile.company_name ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-ink-muted">Perfil</dt>
-                <dd className="text-ink">{profile.role}</dd>
-              </div>
-            </dl>
-          ) : (
+        {!profile && (
+          <div className="rounded-lg border border-border bg-surface p-6">
             <p className="text-sm text-pastel-red-text">
               Não foi possível carregar seu perfil no backend. Verifique se a
               API está rodando e o `.env` está configurado.
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {isPartner && (
           <>
             <JourneyMap milestones={milestones} />
-            <RewardsSection
-              eligibleRewards={eligibleRewards}
-              initialRedemptions={myRedemptions}
-            />
+            <div id="rewards" className="scroll-mt-24">
+              <RewardsSection
+                eligibleRewards={eligibleRewards}
+                initialRedemptions={myRedemptions}
+              />
+            </div>
           </>
         )}
       </main>
