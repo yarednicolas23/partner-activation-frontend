@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 /**
@@ -11,9 +12,10 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full">
       <div className="flex w-full flex-col justify-center px-6 py-16 sm:px-12 lg:w-1/2 lg:px-20">
         <div className="mx-auto w-full max-w-sm">
-          <div className="mb-10 text-sm font-semibold tracking-tight text-ink">
-            KASPERSKY
-            <span className="ml-1 font-normal text-ink-muted">| PARTNER QUEST</span>
+          <div className="mb-10 flex items-center gap-2.5">
+            <Image src="/Kaspersky_logo.svg.webp" alt="Kaspersky" width={110} height={23} priority />
+            <span className="h-4 w-px bg-border" aria-hidden="true" />
+            <span className="text-sm font-medium text-ink-muted">Partner Quest</span>
           </div>
           {children}
         </div>
