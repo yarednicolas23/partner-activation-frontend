@@ -165,8 +165,8 @@ export function StageModal({
               </div>
 
               <div className="mt-6 flex items-center gap-4 rounded-xl bg-canvas p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface">
-                  <GiftIcon />
+                <span className="relative h-14 w-14 shrink-0">
+                  <Image src="/blocked-gift/blocked-gift.png" alt="" fill sizes="56px" className="object-contain" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-brand">Recompensa da etapa</p>
@@ -219,16 +219,6 @@ function LockIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
-function GiftIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
-      <rect x="3" y="8" width="18" height="4" rx="1" />
-      <path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7" />
-      <path d="M12 8c-1.5 0-4-1-4-3.2A2.3 2.3 0 0 1 10.3 2c1.8 0 1.7 3 1.7 6ZM12 8c1.5 0 4-1 4-3.2A2.3 2.3 0 0 0 13.7 2c-1.8 0-1.7 3-1.7 6Z" />
     </svg>
   );
 }

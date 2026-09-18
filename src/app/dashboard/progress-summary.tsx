@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { MilestoneView } from "@/lib/types";
 import { isMilestoneComplete } from "./stage-art";
 
@@ -58,8 +59,8 @@ export function ProgressSummary({
         href="#rewards"
         className="group flex flex-col justify-center rounded-2xl border border-border bg-surface p-5 transition hover:border-brand"
       >
-        <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand">
-          <GiftIcon />
+        <span className="relative mb-1 h-12 w-12 shrink-0">
+          <Image src="/blocked-gift/blocked-gift.png" alt="" fill sizes="48px" className="object-contain" />
         </span>
         <p className="text-sm font-medium text-ink">Veja as recompensas que você pode ganhar</p>
         <span className="mt-1 flex items-center gap-1 text-sm font-medium text-brand">
@@ -76,16 +77,6 @@ function CalendarIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <path d="M16 2v4M8 2v4M3 10h18" />
-    </svg>
-  );
-}
-
-function GiftIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="8" width="18" height="4" rx="1" />
-      <path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7" />
-      <path d="M12 8c-1.5 0-4-1-4-3.2A2.3 2.3 0 0 1 10.3 2c1.8 0 1.7 3 1.7 6ZM12 8c1.5 0 4-1 4-3.2A2.3 2.3 0 0 0 13.7 2c-1.8 0-1.7 3-1.7 6Z" />
     </svg>
   );
 }
