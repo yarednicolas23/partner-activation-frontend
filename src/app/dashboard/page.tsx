@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { JourneyMap } from "./journey-map";
+import { ProgressFooter } from "./progress-footer";
 import { ProgressSummary } from "./progress-summary";
 import { RewardsSection } from "./rewards-section";
 
@@ -109,6 +110,7 @@ export default async function DashboardPage() {
         {isPartner && (
           <>
             <JourneyMap milestones={milestones} />
+            <ProgressFooter milestones={milestones} registeredAt={profile.created_at} />
             <div id="rewards" className="scroll-mt-24">
               <RewardsSection
                 eligibleRewards={eligibleRewards}

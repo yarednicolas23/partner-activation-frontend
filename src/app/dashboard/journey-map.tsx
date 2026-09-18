@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { MilestoneView, TaskWithEvidence } from "@/lib/types";
 import { TaskRow } from "./task-row";
 import {
+  findCurrentMilestone,
   isMilestoneComplete,
   stageImageSrc,
   stageTaskProgress,
@@ -25,8 +26,7 @@ const BADGE_CLASS: Record<StageVisualStatus, string> = {
 
 export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
   const defaultSelected = useMemo(() => {
-    const inProgress = milestones.find((m) => stageVisualStatus(m) !== "locked" && stageVisualStatus(m) !== "completed");
-    return (inProgress ?? milestones[0])?.id ?? null;
+    return (findCurrentMilestone(milestones) ?? milestones[0])?.id ?? null;
   }, [milestones]);
 
   const [selectedId, setSelectedId] = useState<string | null>(defaultSelected);

@@ -35,6 +35,12 @@ export function stageVisualStatus(milestone: MilestoneView): StageVisualStatus {
   return "base";
 }
 
+// A etapa "atual" é a primeira desbloqueada e ainda não concluída — a mesma
+// regra usada para abrir o painel de detalhe por padrão no mapa da jornada.
+export function findCurrentMilestone(milestones: MilestoneView[]): MilestoneView | null {
+  return milestones.find((m) => !m.locked && !isMilestoneComplete(m)) ?? null;
+}
+
 export function stageTaskProgress(milestone: MilestoneView): {
   completed: number;
   total: number;
