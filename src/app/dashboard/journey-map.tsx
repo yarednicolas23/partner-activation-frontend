@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import type { MilestoneView, TaskWithEvidence } from "@/lib/types";
-import { TaskRow } from "./task-row";
+import type { MilestoneView } from "@/lib/types";
+import { StageModal } from "./stage-modal";
 import {
   findCurrentMilestone,
   isMilestoneComplete,
@@ -30,6 +30,7 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
   }, [milestones]);
 
   const [selectedId, setSelectedId] = useState<string | null>(defaultSelected);
+  const [modalOpen, setModalOpen] = useState(false);
   const selected = milestones.find((m) => m.id === selectedId) ?? null;
 
   return (
@@ -75,7 +76,10 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
                 key={milestone.id}
                 milestone={milestone}
                 selected={milestone.id === selectedId}
-                onSelect={() => setSelectedId(milestone.id)}
+                onSelect={() => {
+                  setSelectedId(milestone.id);
+                  setModalOpen(true);
+                }}
                 delay={i * 0.08}
               />
             ))}
@@ -83,37 +87,15 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {selected && (
-          <motion.div
+      <AnimatePresence>
+        {modalOpen && selected && (
+          <StageModal
             key={selected.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="mt-8 border-t border-border pt-6"
-          >
-            <h3 className="mb-1 text-base font-semibold text-ink">
-              {selected.order_index}. {selected.locked ? "Etapa bloqueada" : selected.title}
-            </h3>
-            {selected.locked ? (
-              <p className="flex items-center gap-1.5 text-sm text-ink-muted">
-                <LockIcon />
-                Conclua a etapa anterior para desbloquear esta etapa.
-              </p>
-            ) : (
-              <>
-                {selected.description && (
-                  <p className="mb-4 text-sm text-ink-muted">{selected.description}</p>
-                )}
-                <div className="space-y-3">
-                  {selected.tasks?.map((task: TaskWithEvidence) => (
-                    <TaskRow key={task.id} task={task} />
-                  ))}
-                </div>
-              </>
-            )}
-          </motion.div>
+            milestones={milestones}
+            milestone={selected}
+            onClose={() => setModalOpen(false)}
+            onSelect={setSelectedId}
+          />
         )}
       </AnimatePresence>
     </div>
