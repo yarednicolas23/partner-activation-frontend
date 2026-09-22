@@ -9,12 +9,14 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthLayout>
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
-        Entrar
+      <h1 className="mb-3 text-3xl font-bold tracking-tight text-ink">
+        Acesse sua jornada,
+        <br />
+        <span className="text-brand">parceiro</span>
       </h1>
       <p className="mb-8 text-sm text-ink-muted">
-        Acesse com o e-mail cadastrado pela Kaspersky. Sem senha — você vai
-        receber um link de acesso.
+        Acesso exclusivo para parceiros pré-cadastrados pela Kaspersky. Insira
+        o e-mail informado no convite para continuar.
       </p>
       <LoginForm />
     </AuthLayout>

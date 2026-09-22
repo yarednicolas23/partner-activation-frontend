@@ -2,51 +2,66 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 
 /**
- * Layout de dos columnas para pantallas de auth: card blanca centrada a la
- * izquierda + panel de marca a la derecha. Estructura inspirada en
- * my.kaspersky.com (card + panel lateral), ilustración propia (no se
- * reproduce el arte de Kaspersky).
+ * Card branco centralizado sobre a cidade isométrica de fundo (mesmo motivo
+ * visual da Journey/stage modal). Layout único para todas as telas de auth.
  */
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="flex w-full flex-col justify-center px-6 py-16 sm:px-12 lg:w-1/2 lg:px-20">
-        <div className="mx-auto w-full max-w-sm">
-          <div className="mb-10 flex items-center gap-2.5">
-            <Image src="/Kaspersky_logo.svg.webp" alt="Kaspersky" width={110} height={23} priority />
-            <span className="h-4 w-px bg-border" aria-hidden="true" />
-            <span className="text-sm font-medium text-ink-muted">Partner Quest</span>
-          </div>
-          {children}
-        </div>
-      </div>
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-canvas px-4 py-12 sm:px-6">
+      <Image
+        src="/background/background.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
+      />
 
-      <div className="relative hidden overflow-hidden bg-brand-soft lg:flex lg:w-1/2 lg:items-center lg:justify-center">
-        <BrandIllustration />
+      <div className="relative w-full max-w-lg rounded-3xl bg-surface p-8 shadow-xl shadow-ink/5 sm:p-10">
+        <Image
+          src="/logo-partnert-quest.svg"
+          alt="Kaspersky Partner Quest"
+          width={205}
+          height={139}
+          priority
+          className="mb-8 h-auto w-36"
+        />
+
+        {children}
+
+        <div className="mt-8 flex items-start gap-3 border-t border-border pt-6 text-sm text-ink-muted">
+          <HeadsetIcon />
+          <p>
+            Precisa de ajuda? Entre em contato pelo e-mail{" "}
+            <a
+              href="mailto:canais.brasil@kaspersky.com"
+              className="font-semibold text-brand"
+            >
+              canais.brasil@kaspersky.com
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-function BrandIllustration() {
+function HeadsetIcon() {
   return (
     <svg
-      viewBox="0 0 400 400"
-      className="w-2/3 max-w-md text-brand"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden="true"
+      className="mt-0.5 shrink-0"
     >
-      <rect x="40" y="220" width="120" height="120" rx="12" fill="currentColor" opacity="0.12" />
-      <rect x="180" y="160" width="140" height="180" rx="12" fill="currentColor" opacity="0.2" />
-      <rect x="90" y="60" width="160" height="120" rx="12" fill="currentColor" opacity="0.3" />
-      <circle cx="330" cy="90" r="26" fill="currentColor" opacity="0.4" />
-      <path
-        d="M60 340 L340 340"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeDasharray="6 8"
-        opacity="0.4"
-      />
+      <path d="M3 14v-3a9 9 0 0 1 18 0v3" />
+      <path d="M21 14v3a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3ZM3 14v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3Z" />
     </svg>
   );
 }
