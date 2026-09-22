@@ -1,10 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { PartnerProfile } from "@/lib/types";
 import { LogoutButton } from "./logout-button";
 
 export function Navbar({ profile }: { profile: PartnerProfile | null }) {
   const isAdmin = profile?.role === "admin";
+  const pathname = usePathname();
 
   return (
     <header className="border-b border-border bg-surface">
@@ -27,16 +31,22 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
         <nav className="flex items-center gap-1 text-sm">
           {isAdmin ? (
             <>
-              <NavLink href="/admin/dashboard">Dashboard</NavLink>
-              <NavLink href="/admin/partners">Parceiros</NavLink>
-              <NavLink href="/admin/evidence">Evidências</NavLink>
-              <NavLink href="/admin/rewards">Recompensas</NavLink>
+              <NavLink href="/admin/dashboard" active={pathname === "/admin/dashboard"}>Dashboard</NavLink>
+              <NavLink href="/admin/partners" active={pathname.startsWith("/admin/partners")}>Parceiros</NavLink>
+              <NavLink href="/admin/evidence" active={pathname === "/admin/evidence"}>Evidências</NavLink>
+              <NavLink href="/admin/rewards" active={pathname === "/admin/rewards"}>Recompensas</NavLink>
             </>
           ) : (
             <>
-              <NavLink href="/dashboard" icon={<MapIcon />}>Jornada</NavLink>
-              <NavLink href="/dashboard#rewards" icon={<GiftIcon />}>Recompensas</NavLink>
-              <NavLink href="/dashboard/historico">Histórico</NavLink>
+              <NavLink href="/dashboard" icon={<MapIcon />} active={pathname === "/dashboard"}>
+                Jornada
+              </NavLink>
+              <NavLink href="/dashboard/rewards" icon={<GiftIcon />} active={pathname === "/dashboard/rewards"}>
+                Recompensas
+              </NavLink>
+              <NavLink href="/dashboard/historico" active={pathname === "/dashboard/historico"}>
+                Histórico
+              </NavLink>
             </>
           )}
         </nav>
@@ -80,15 +90,20 @@ function NavLink({
   href,
   children,
   icon,
+  active,
 }: {
   href: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  active?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-ink-muted transition hover:bg-brand-soft hover:text-ink"
+      aria-current={active ? "page" : undefined}
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition ${
+        active ? "bg-brand-soft text-brand" : "text-ink-muted hover:bg-brand-soft hover:text-ink"
+      }`}
     >
       {icon}
       {children}

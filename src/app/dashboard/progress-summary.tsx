@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { MilestoneView } from "@/lib/types";
 import { isMilestoneComplete } from "./stage-art";
 
@@ -55,8 +56,8 @@ export function ProgressSummary({
         </dl>
       </div>
 
-      <a
-        href="#rewards"
+      <Link
+        href="/dashboard/rewards"
         className="group flex flex-col justify-center rounded-2xl border border-border bg-surface p-5 transition hover:border-brand"
       >
         <span className="relative mb-1 h-12 w-12 shrink-0">
@@ -67,7 +68,7 @@ export function ProgressSummary({
           Ir para Recompensas
           <ArrowIcon />
         </span>
-      </a>
+      </Link>
     </div>
   );
 }
