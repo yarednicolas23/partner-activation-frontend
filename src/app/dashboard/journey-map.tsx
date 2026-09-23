@@ -38,13 +38,13 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
   const current = findCurrentMilestone(milestones);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <div>
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight text-ink">Sua jornada</h2>
       </div>
 
       <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-0 sm:overflow-visible sm:px-0">
-        <div className="relative min-w-[640px] sm:min-w-0 [--stage-w:96px] sm:[--stage-w:132px] lg:[--stage-w:168px]">
+        <div className="relative min-w-[640px] sm:min-w-0 [--stage-w:120px] sm:[--stage-w:180px] lg:[--stage-w:224px]">
           {/* Linha contínua atrás dos badges — um segmento por transição entre etapas. */}
           <div
             className="pointer-events-none absolute inset-x-0"
