@@ -45,7 +45,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Navbar profile={profile} />
-      <main className="mx-auto w-full max-w-6xl px-6 py-10 sm:py-14">
+      <main className="mx-auto w-[calc(100%-48px)] max-w-[1800px] py-10 sm:w-[calc(100%-96px)] sm:py-14">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">

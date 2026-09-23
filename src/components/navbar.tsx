@@ -4,15 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { PartnerProfile } from "@/lib/types";
-import { LogoutButton } from "./logout-button";
+import { ProfileMenu } from "./profile-menu";
 
 export function Navbar({ profile }: { profile: PartnerProfile | null }) {
   const isAdmin = profile?.role === "admin";
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-[22px] z-40 mx-6 mt-[22px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:mx-12">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4 sm:py-5">
+    <header className="sticky top-[22px] z-40 mx-auto mt-[22px] w-[calc(100%-48px)] max-w-[1800px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:w-[calc(100%-96px)]">
+      <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8 sm:py-5">
         <Link
           href={isAdmin ? "/admin/dashboard" : "/dashboard"}
           className="flex items-center gap-2.5"
@@ -44,9 +44,6 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
               <NavLink href="/dashboard/rewards" icon={<GiftIcon />} active={pathname === "/dashboard/rewards"}>
                 Recompensas
               </NavLink>
-              <NavLink href="/dashboard/historico" active={pathname === "/dashboard/historico"}>
-                Histórico
-              </NavLink>
             </>
           )}
         </nav>
@@ -61,29 +58,11 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
             <BellIcon />
           </button>
 
-          <div className="flex items-center gap-2.5 border-l border-border pl-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand">
-              {initials(profile)}
-            </span>
-            <div className="hidden leading-tight sm:block">
-              <p className="text-sm font-medium text-ink">{profile?.full_name ?? "—"}</p>
-              <p className="text-xs text-ink-muted">{isAdmin ? "Administrador" : "Parceiro"}</p>
-            </div>
-          </div>
-
-          <LogoutButton />
+          <ProfileMenu profile={profile} isAdmin={isAdmin} />
         </div>
       </div>
     </header>
   );
-}
-
-function initials(profile: PartnerProfile | null): string {
-  const source = profile?.full_name?.trim() || profile?.email;
-  if (!source) return "?";
-  const parts = source.split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function NavLink({
