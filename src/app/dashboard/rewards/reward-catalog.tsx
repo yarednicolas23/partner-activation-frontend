@@ -12,12 +12,55 @@ import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "..
 
 type CardStatus = "locked" | "available" | "pending" | "shipping" | "delivered" | "rejected";
 
-const STATUS_BADGE: Record<Exclude<CardStatus, "locked">, { label: string; className: string; icon: React.ReactNode }> = {
-  delivered: { label: "Entregue", className: "bg-pastel-green-bg text-pastel-green-text", icon: <CheckIcon /> },
-  shipping: { label: "Em trânsito", className: "bg-pastel-blue-bg text-pastel-blue-text", icon: <TruckIcon /> },
-  available: { label: "Disponível", className: "bg-brand-soft text-brand", icon: <GiftIcon /> },
-  pending: { label: "Em análise", className: "bg-pastel-yellow-bg text-pastel-yellow-text", icon: <ClockIcon /> },
-  rejected: { label: "Não aprovado", className: "bg-pastel-red-bg text-pastel-red-text", icon: <AlertIcon /> },
+const STATUS_META: Record<
+  Exclude<CardStatus, "locked">,
+  { label: string; icon: React.ReactNode; pillBg: string; pillText: string; iconBg: string; boxBg: string; boxText: string }
+> = {
+  delivered: {
+    label: "Entregue",
+    icon: <CheckIcon />,
+    pillBg: "bg-pastel-green-bg",
+    pillText: "text-pastel-green-text",
+    iconBg: "bg-pastel-green-text",
+    boxBg: "bg-pastel-green-bg",
+    boxText: "text-pastel-green-text",
+  },
+  shipping: {
+    label: "Em trânsito",
+    icon: <TruckIcon />,
+    pillBg: "bg-pastel-blue-bg",
+    pillText: "text-pastel-blue-text",
+    iconBg: "bg-pastel-blue-text",
+    boxBg: "bg-pastel-blue-bg",
+    boxText: "text-pastel-blue-text",
+  },
+  available: {
+    label: "Disponível",
+    icon: <GiftIcon size={12} />,
+    pillBg: "bg-brand-soft",
+    pillText: "text-brand",
+    iconBg: "bg-brand",
+    boxBg: "bg-brand-soft",
+    boxText: "text-brand",
+  },
+  pending: {
+    label: "Em análise",
+    icon: <ClockIcon />,
+    pillBg: "bg-pastel-yellow-bg",
+    pillText: "text-pastel-yellow-text",
+    iconBg: "bg-pastel-yellow-text",
+    boxBg: "bg-pastel-yellow-bg",
+    boxText: "text-pastel-yellow-text",
+  },
+  rejected: {
+    label: "Não aprovado",
+    icon: <AlertIcon />,
+    pillBg: "bg-pastel-red-bg",
+    pillText: "text-pastel-red-text",
+    iconBg: "bg-pastel-red-text",
+    boxBg: "bg-pastel-red-bg",
+    boxText: "text-pastel-red-text",
+  },
 };
 
 const TYPE_LABEL: Record<RewardWithMilestone["type"], string> = {
@@ -177,89 +220,121 @@ function RewardCard({
     setSending(false);
   }
 
+  const meta = status === "locked" ? null : STATUS_META[status];
+
+  const boxHeadline =
+    status === "available"
+      ? `Etapa ${reward.milestone.order_index} concluída`
+      : meta?.label;
+
+  const boxSubline =
+    status === "delivered"
+      ? `Recebido em ${formatDate(redemption!.reviewed_at!)}.`
+      : status === "shipping"
+        ? `Aprovado em ${formatDate(redemption!.reviewed_at!)} — em preparação para envio.`
+        : status === "available"
+          ? "Você já pode resgatar esta recompensa."
+          : status === "pending"
+            ? `Solicitado em ${formatDate(redemption!.requested_at)} — aguardando aprovação.`
+            : status === "rejected"
+              ? redemption!.admin_note || "Solicitação não aprovada."
+              : undefined;
+
   return (
-    <div className="flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-surface">
-      <div className="relative aspect-square shrink-0 bg-canvas p-8">
+    <div className="flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-2xl bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
+      <div className="relative aspect-square shrink-0 p-8">
         <Image
           src="/blocked-gift/blocked-gift.png"
           alt=""
           fill
           priority
           sizes="256px"
-          className={`object-contain p-4 ${status === "locked" ? "opacity-60 grayscale" : ""}`}
+          className="object-contain p-4"
         />
         {status === "locked" ? (
-          <span className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-border bg-surface text-ink-muted">
+          <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-brand bg-surface text-ink-muted">
             <LockIcon />
           </span>
         ) : (
           <span
-            className={`absolute left-3 top-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_BADGE[status].className}`}
+            className={`absolute left-3 top-3 flex items-center gap-1.5 rounded-full py-1 pl-1 pr-3 text-xs font-bold uppercase tracking-wide ${meta!.pillBg} ${meta!.pillText}`}
           >
-            {STATUS_BADGE[status].icon}
-            {STATUS_BADGE[status].label}
+            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${meta!.iconBg}`}>
+              {meta!.icon}
+            </span>
+            {meta!.label}
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-sm font-semibold text-ink">{reward.title}</p>
-        <p className="mb-3 line-clamp-2 text-xs text-ink-muted">
-          {reward.description || TYPE_LABEL[reward.type]}
-        </p>
+      <div className="border-t border-border" />
 
-        <div className="mt-auto space-y-2">
-          {status === "locked" && (
-            <div>
-              <p className="text-sm font-semibold text-ink">Recompensa bloqueada</p>
-              <p className="text-xs text-ink-muted">
-                Conclua a Etapa {reward.milestone.order_index} para desbloquear.
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div>
+          <p className="text-sm font-semibold text-ink">{reward.title}</p>
+          <p className="line-clamp-2 text-xs text-ink-muted">
+            {reward.description || TYPE_LABEL[reward.type]}
+          </p>
+        </div>
+
+        {status === "locked" ? (
+          <div className="mt-auto">
+            <p className="text-sm font-semibold text-ink">Recompensa bloqueada</p>
+            <p className="text-xs text-ink-muted">
+              Conclua a Etapa {reward.milestone.order_index} para desbloquear.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-auto space-y-2">
+            <div className={`rounded-xl p-3 ${meta!.boxBg}`}>
+              <p className={`flex items-center gap-1.5 text-sm font-semibold ${meta!.boxText}`}>
+                {meta!.icon}
+                {boxHeadline}
               </p>
+              {boxSubline && <p className={`mt-0.5 text-xs ${meta!.boxText}`}>{boxSubline}</p>}
             </div>
-          )}
 
-          {status === "available" && (
-            <>
-              <p className="text-xs text-pastel-green-text">
-                Etapa {reward.milestone.order_index} concluída — você já pode resgatar esta recompensa.
-              </p>
+            {status === "available" && (
               <button
                 type="button"
                 onClick={handleRedeem}
                 disabled={sending}
-                className="flex w-full items-center justify-center gap-1 rounded-full bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-1 rounded-full bg-brand px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {sending ? "Enviando..." : "Resgatar recompensa"}
-                {!sending && <ArrowIcon />}
+                {!sending && <ChevronRightIcon />}
               </button>
-              {error && (
-                <p className="text-xs text-pastel-red-text">Não foi possível enviar. Tente novamente.</p>
-              )}
-            </>
-          )}
+            )}
 
-          {status === "pending" && (
-            <p className="text-xs text-ink-muted">
-              Solicitado em {formatDate(redemption!.requested_at)} — aguardando aprovação.
-            </p>
-          )}
+            {status === "available" && error && (
+              <p className="text-xs text-pastel-red-text">Não foi possível enviar. Tente novamente.</p>
+            )}
 
-          {status === "shipping" && (
-            <p className="text-xs text-ink-muted">
-              Aprovado em {formatDate(redemption!.reviewed_at!)} — em preparação para envio.
-            </p>
-          )}
+            {/* "Ver detalhes" / "Acompanhar entrega" ainda não têm uma página de
+               destino no backend — ficam como preview visual do design até existir. */}
+            {status === "delivered" && (
+              <button
+                type="button"
+                disabled
+                className="flex w-full cursor-default items-center justify-between rounded-full bg-canvas px-4 py-2.5 text-sm font-medium text-ink-muted"
+              >
+                Ver detalhes
+                <ChevronRightIcon />
+              </button>
+            )}
 
-          {status === "delivered" && (
-            <p className="text-xs text-ink-muted">Recebido em {formatDate(redemption!.reviewed_at!)}.</p>
-          )}
-
-          {status === "rejected" && (
-            <p className="text-xs text-pastel-red-text">
-              {redemption!.admin_note || "Solicitação não aprovada."}
-            </p>
-          )}
-        </div>
+            {status === "shipping" && (
+              <button
+                type="button"
+                disabled
+                className="flex w-full cursor-default items-center justify-between rounded-full bg-canvas px-4 py-2.5 text-sm font-medium text-ink-muted"
+              >
+                Acompanhar entrega
+                <ChevronRightIcon />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -276,7 +351,7 @@ function LockIcon() {
 
 function CheckIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       <path d="M20 6 9 17l-5-5" />
     </svg>
   );
@@ -284,7 +359,7 @@ function CheckIcon() {
 
 function TruckIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       <path d="M3 7h11v10H3z" />
       <path d="M14 10h4l3 3v4h-7z" />
       <circle cx="7.5" cy="18" r="1.5" />
@@ -293,9 +368,9 @@ function TruckIcon() {
   );
 }
 
-function GiftIcon() {
+function GiftIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       <rect x="3" y="8" width="18" height="4" rx="1" />
       <path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7" />
       <path d="M12 8c-1.5 0-4-1-4-3.2A2.3 2.3 0 0 1 10.3 2c1.8 0 1.7 3 1.7 6ZM12 8c1.5 0 4-1 4-3.2A2.3 2.3 0 0 0 13.7 2c-1.8 0-1.7 3-1.7 6Z" />
@@ -305,7 +380,7 @@ function GiftIcon() {
 
 function ClockIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 3" />
     </svg>
@@ -314,18 +389,10 @@ function ClockIcon() {
 
 function AlertIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       <path d="M12 9v4" />
       <path d="M10.3 3.9 1.8 18a1.5 1.5 0 0 0 1.3 2.3h17.8a1.5 1.5 0 0 0 1.3-2.3L13.7 3.9a1.5 1.5 0 0 0-2.6 0Z" />
       <path d="M12 17h.01" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   );
 }
