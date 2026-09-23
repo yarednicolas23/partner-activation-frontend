@@ -54,7 +54,7 @@ export function ProgressFooter({
   const remaining = currentProgress ? currentProgress.total - currentProgress.completed : 0;
 
   return (
-    <div className="mt-6 grid gap-6 rounded-2xl border border-border bg-surface p-6 sm:grid-cols-3 sm:divide-x sm:divide-border">
+    <div className="mt-6 grid gap-6 rounded-[10px] bg-surface p-6 shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:grid-cols-3 sm:divide-x sm:divide-border">
       <Stat
         icon={<ClockIcon />}
         label="Tempo restante do programa"

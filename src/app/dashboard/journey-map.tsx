@@ -16,9 +16,12 @@ import {
 
 const STAGE_GAP = 14;
 
+// Cor final do gradiente de progresso (spec XD): transparent linear-gradient(90deg, #29CCB1 0%, #F1F5F8 100%)
+const PROGRESS_GRADIENT_END = "#f1f5f8";
+
 const BADGE_CLASS: Record<StageVisualStatus, string> = {
   locked: "bg-surface text-ink-muted ring-2 ring-border",
-  base: "bg-brand text-white ring-4 ring-brand-soft",
+  base: "text-white",
   review: "bg-pastel-yellow-text text-white ring-4 ring-pastel-yellow-bg",
   alert: "bg-pastel-red-text text-white ring-4 ring-pastel-red-bg",
   completed: "bg-pastel-green-text text-white ring-2 ring-transparent",
@@ -32,6 +35,7 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(defaultSelected);
   const [modalOpen, setModalOpen] = useState(false);
   const selected = milestones.find((m) => m.id === selectedId) ?? null;
+  const current = findCurrentMilestone(milestones);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
@@ -46,18 +50,29 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
             className="pointer-events-none absolute inset-x-0"
             style={{ top: `calc(var(--stage-w) + ${STAGE_GAP}px)` }}
           >
-            <div className="relative h-[3px] -translate-y-1/2">
+            <div className="relative h-1 -translate-y-1/2">
               {milestones.slice(0, -1).map((milestone, i) => {
                 const n = milestones.length;
                 const left = ((i + 0.5) / n) * 100;
                 const width = (1 / n) * 100;
+                const complete = isMilestoneComplete(milestone);
+                // O trecho que leva até a etapa em andamento usa o gradiente de
+                // progresso (spec XD); os demais seguem sólidos (percorrido vs. pendente).
+                const leadsToCurrent = complete && milestones[i + 1]?.id === current?.id;
                 return (
                   <motion.div
                     key={milestone.id}
                     className={`absolute top-0 h-full rounded-full ${
-                      isMilestoneComplete(milestone) ? "bg-brand" : "bg-border"
+                      leadsToCurrent ? "" : complete ? "bg-brand" : "bg-border"
                     }`}
-                    style={{ left: `${left}%`, width: `${width}%`, transformOrigin: "left" }}
+                    style={{
+                      left: `${left}%`,
+                      width: `${width}%`,
+                      transformOrigin: "left",
+                      background: leadsToCurrent
+                        ? `linear-gradient(90deg, var(--color-brand) 0%, ${PROGRESS_GRADIENT_END} 100%)`
+                        : undefined,
+                    }}
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease: "easeOut" }}
@@ -154,12 +169,21 @@ function StageColumn({
         className={`relative z-10 -mt-4 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold shadow-sm transition ${BADGE_CLASS[status]} ${
           selected ? "outline outline-2 outline-offset-2 outline-ink/20" : ""
         }`}
+        style={
+          status === "base"
+            ? { background: `conic-gradient(var(--color-brand) ${progress.percent * 3.6}deg, var(--color-brand-soft) 0deg)` }
+            : undefined
+        }
       >
         {status === "locked" && <LockIcon />}
         {status === "completed" && <CheckIcon />}
         {status === "review" && <ClockIcon />}
         {status === "alert" && <AlertIcon />}
-        {status === "base" && <span>{progress.percent}%</span>}
+        {status === "base" && (
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-surface text-[9px] font-bold leading-none text-brand">
+            {progress.percent}%
+          </span>
+        )}
       </div>
 
       <div className="mt-3 space-y-0.5">

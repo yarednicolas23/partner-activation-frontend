@@ -2,14 +2,14 @@
 
 :root {
   /* Marca — extraído de my.kaspersky.com (botón "Iniciar sesión": rgb(29,161,137)) */
-  --color-brand: #1da189;
+  --color-brand: #29ccb1;
   --color-brand-hover: #178572;
   --color-brand-soft: #e7f4f1;
 
   /* Base editorial (skill minimalist-ui) */
   --color-ink: #1d1d1b; /* texto principal — igual al heading de my.kaspersky.com */
   --color-ink-muted: #6b6f6d;
-  --color-canvas: #f4f6f5; /* fondo de página, tono frío pálido como my.kaspersky.com */
+  --color-canvas: #eae7eb; /* fondo de página */
   --color-surface: #ffffff; /* cards */
   --color-border: #e6e8e7;
 

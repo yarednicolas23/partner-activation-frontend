@@ -11,8 +11,8 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-3">
+    <header className="sticky top-[22px] z-40 mx-6 mt-[22px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:mx-12">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4 sm:py-5">
         <Link
           href={isAdmin ? "/admin/dashboard" : "/dashboard"}
           className="flex items-center gap-2.5"
