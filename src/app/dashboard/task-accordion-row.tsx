@@ -23,9 +23,9 @@ function howToComplete(evidenceType: EvidenceType): string {
     return "Nenhuma ação é necessária. Esta missão é concluída automaticamente pelo sistema.";
   }
   if (evidenceType === "file") {
-    return "Envie o arquivo solicitado (PDF, JPG ou PNG) no campo abaixo.";
+    return "Envie o arquivo solicitado (PDF, JPG ou PNG) no campo ao lado.";
   }
-  return "Envie o link, e-mail ou número solicitado no campo abaixo.";
+  return "Envie o link, e-mail ou número solicitado no campo ao lado.";
 }
 
 function verificationNote(evidenceType: EvidenceType): string {
@@ -34,6 +34,9 @@ function verificationNote(evidenceType: EvidenceType): string {
   }
   return "Revisado manualmente pela equipe Kaspersky.";
 }
+
+const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 export function TaskAccordionRow({
   task,
@@ -49,11 +52,28 @@ export function TaskAccordionRow({
   const [textValue, setTextValue] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
+  const [dragging, setDragging] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  // Mismos límites que valida el backend (backend/src/aws/s3.service.ts) —
+  // acá solo para avisar antes de subir.
+  function pickFile(picked: File | null) {
+    if (picked && !ACCEPTED_TYPES.includes(picked.type)) {
+      setFileError("Formato não suportado. Envie um PDF, JPG ou PNG.");
+      return;
+    }
+    if (picked && picked.size > MAX_FILE_BYTES) {
+      setFileError("O arquivo excede o limite de 10 MB.");
+      return;
+    }
+    setFileError(null);
+    setFile(picked);
+  }
 
   const isAuto = task.evidence_type === "none";
   const isDone = isAuto || evidence?.status === "approved";
   const statusLabel = isAuto ? "Concluída" : evidence ? STATUS_LABEL[evidence.status] : "Disponível";
-  const statusClass = isAuto ? "text-brand" : evidence ? STATUS_TEXT_CLASS[evidence.status] : "text-ink-muted";
+  const statusClass = isAuto ? "text-brand" : evidence ? STATUS_TEXT_CLASS[evidence.status] : "text-ink";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -138,38 +158,53 @@ export function TaskAccordionRow({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-4 py-4 text-left"
+        className="flex w-full items-center gap-6 px-4 py-4 text-left"
       >
         <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-            isDone ? "bg-brand text-white" : "bg-border"
-          }`}
+          className="flex h-7 w-7 shrink-0 items-center justify-center"
         >
-          {isDone && <CheckIcon />}
+          {isDone ? (
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-white">
+              <CheckIcon />
+            </span>
+          ) : (
+            <span className="h-3 w-3 rounded-full bg-[#5b5b5b]" />
+          )}
         </span>
-        <span className="w-6 shrink-0 text-sm font-semibold text-brand">
+        <span className="w-6 shrink-0 text-sm font-medium text-brand">
           {String(index).padStart(2, "0")}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{task.title}</span>
+        <span className="min-w-0 flex-1 truncate text-base font-semibold text-ink">{task.title}</span>
         <span className={`shrink-0 text-sm font-medium ${statusClass}`}>{statusLabel}</span>
-        <ChevronIcon className={open ? "rotate-90" : ""} />
+        <ChevronIcon className={`${open ? "rotate-90" : ""} ${isDone ? "text-brand" : "text-ink"}`} />
       </button>
 
       {open && (
-        <div className="ml-10 space-y-4 pb-5 pr-2">
-          {task.description && <p className="text-sm text-ink-muted">{task.description}</p>}
-
-          <div>
-            <p className="text-sm font-medium text-ink">Como completar</p>
-            <p className="text-sm text-ink-muted">{howToComplete(task.evidence_type)}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-ink">Verificação</p>
-            <p className="text-sm text-ink-muted">{verificationNote(task.evidence_type)}</p>
+        <div
+          className={`grid gap-6 px-4 pb-6 pt-2 ${
+            isAuto ? "" : "md:grid-cols-[1.2fr_1fr] md:divide-x md:divide-border"
+          }`}
+        >
+          {/* Diseño XD: columna izquierda con el detalle de la misión. */}
+          <div className="flex items-start gap-5 md:pr-6">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-nav-pill">
+              <TaskDocIcon />
+            </span>
+            <div className="space-y-5 text-[15px] leading-snug">
+              {task.description && <p className="text-ink-muted">{task.description}</p>}
+              <div>
+                <p className="font-medium text-ink">Como concluir</p>
+                <p className="text-ink-muted">{howToComplete(task.evidence_type)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink">Verificação</p>
+                <p className="text-ink-muted">{verificationNote(task.evidence_type)}</p>
+              </div>
+            </div>
           </div>
 
           {!isAuto && (
-            <>
+            <div className="space-y-3 md:pl-6">
               {evidence?.status === "rejected" && evidence.review_note && (
                 <p className="text-sm text-pastel-red-text">{evidence.review_note}</p>
               )}
@@ -181,7 +216,7 @@ export function TaskAccordionRow({
               )}
 
               {(!evidence || evidence.status === "rejected") && (
-                <form onSubmit={handleSubmit} className="flex gap-2">
+                <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
                   {task.evidence_type === "text" ? (
                     <input
                       type="text"
@@ -189,34 +224,60 @@ export function TaskAccordionRow({
                       value={textValue}
                       onChange={(e) => setTextValue(e.target.value)}
                       placeholder="Link, e-mail ou número"
-                      className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
+                      className="w-full rounded-[10px] border border-border bg-surface px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
                     />
                   ) : (
                     <label
                       htmlFor={`file-${task.id}`}
-                      className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-dashed border-border bg-surface px-3 py-1.5 text-sm text-ink-muted transition hover:border-brand hover:bg-brand-soft hover:text-ink"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragging(true);
+                      }}
+                      onDragLeave={() => setDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setDragging(false);
+                        pickFile(e.dataTransfer.files?.[0] ?? null);
+                      }}
+                      className={`flex w-full cursor-pointer flex-col items-center rounded-[16px] border-2 border-dashed px-6 py-6 text-center transition ${
+                        dragging ? "border-brand bg-brand-soft" : "border-border bg-[#f8fafb] hover:border-brand"
+                      }`}
                     >
-                      <UploadIcon />
-                      <span className="truncate">
-                        {file ? file.name : "Escolher arquivo (PDF, JPG ou PNG)"}
+                      <DocumentUploadIcon />
+                      <span className="mt-3 text-sm text-ink">
+                        {file ? (
+                          <span className="font-semibold">{file.name}</span>
+                        ) : (
+                          <>
+                            Arraste e solte o arquivo aqui ou{" "}
+                            <span className="font-semibold underline underline-offset-2">
+                              Escolha o arquivo
+                            </span>
+                          </>
+                        )}
+                      </span>
+                      <span className="mt-1 text-xs text-[#c4c4c4]">
+                        {file ? "Clique para trocar o arquivo" : "PDF, JPG ou PNG (máx. 10 MB)"}
                       </span>
                       <input
                         id={`file-${task.id}`}
                         type="file"
-                        required
-                        accept="application/pdf,image/jpeg,image/png"
-                        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                        accept={ACCEPTED_TYPES.join(",")}
+                        onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
                         className="hidden"
                       />
                     </label>
                   )}
+
+                  {fileError && <p className="text-xs text-pastel-red-text">{fileError}</p>}
+
                   <button
                     type="submit"
-                    disabled={status === "sending"}
-                    className="flex shrink-0 items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={status === "sending" || (task.evidence_type === "file" && !file)}
+                    className="flex h-[52px] w-full max-w-[17rem] items-center justify-center gap-6 rounded-[10px] border-2 border-brand bg-surface text-base font-medium text-brand transition hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
                   >
+                    {status === "sending" ? "Enviando..." : "Enviar comprovação"}
                     {status !== "sending" && <SendIcon />}
-                    {status === "sending" ? "Enviando..." : "Enviar"}
                   </button>
                 </form>
               )}
@@ -226,7 +287,7 @@ export function TaskAccordionRow({
                   Não foi possível enviar. Tente novamente.
                 </p>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
@@ -244,49 +305,37 @@ function CheckIcon() {
 
 function ChevronIcon({ className = "" }: { className?: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`shrink-0 text-ink-muted transition-transform ${className}`}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`shrink-0 transition-transform ${className}`}>
       <path d="m9 6 6 6-6 6" />
     </svg>
   );
 }
 
-function UploadIcon() {
+function TaskDocIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <path d="M12 16V4" />
-      <path d="m7 9 5-5 5 5" />
-      <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    <svg width="26" height="28" viewBox="0 0 26 28" fill="none" stroke="var(--color-brand)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 26H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3h13a3 3 0 0 1 3 3v10" />
+      <path d="M7 9h9M7 14h6" />
+      <path d="m15.5 22 3 3 5.5-6" />
+    </svg>
+  );
+}
+
+function DocumentUploadIcon() {
+  return (
+    <svg width="48" height="56" viewBox="0 0 48 56" aria-hidden="true">
+      <path d="M6 2h20l12 12v32a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4Z" fill="#e3e6e9" />
+      <path d="M26 2v8a4 4 0 0 0 4 4h8Z" fill="#cfd4d8" />
+      <circle cx="34" cy="42" r="12" fill="var(--color-brand)" />
+      <path d="M34 47v-9m-4 3.5 4-4 4 4M29.5 48.5h9" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function SendIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <path d="M4 12h16" />
-      <path d="m13 5 7 7-7 7" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      <path d="m9 5 7 7-7 7" />
     </svg>
   );
 }
