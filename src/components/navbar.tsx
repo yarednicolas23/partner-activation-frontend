@@ -30,7 +30,7 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
           />
         </Link>
 
-        <nav className="flex items-center gap-1 text-sm">
+        <nav className="flex items-center gap-2">
           {isAdmin ? (
             <>
               <NavLink href="/admin/dashboard" active={pathname === "/admin/dashboard"}>Dashboard</NavLink>
@@ -40,10 +40,10 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
             </>
           ) : (
             <>
-              <NavLink href="/dashboard" icon={<MapIcon />} active={pathname === "/dashboard"}>
+              <NavLink href="/dashboard" icon={(active) => <MapIcon active={active} />} active={pathname === "/dashboard"}>
                 Jornada
               </NavLink>
-              <NavLink href="/dashboard/rewards" icon={<GiftIcon />} active={pathname === "/dashboard/rewards"}>
+              <NavLink href="/dashboard/rewards" icon={(active) => <GiftIcon active={active} />} active={pathname === "/dashboard/rewards"}>
                 Recompensas
               </NavLink>
             </>
@@ -75,35 +75,63 @@ function NavLink({
 }: {
   href: string;
   children: React.ReactNode;
-  icon?: React.ReactNode;
+  icon?: (active: boolean) => React.ReactNode;
   active?: boolean;
 }) {
+  // Diseño XD: item activo con fondo #F1F5F8, radius 16px, 60px de alto.
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition ${
-        active ? "bg-brand-soft text-brand" : "text-ink-muted hover:bg-brand-soft hover:text-ink"
+      className={`flex h-[60px] items-center gap-2.5 rounded-[16px] px-6 font-display text-base font-medium text-ink transition ${
+        active ? "bg-nav-pill" : "hover:bg-nav-pill"
       }`}
     >
-      {icon}
+      {icon?.(!!active)}
       {children}
     </Link>
   );
 }
 
-function MapIcon() {
+function MapIcon({ active }: { active: boolean }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3Z" />
-      <path d="M9 3v15M15 6v15" />
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 26 26"
+      fill="none"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={active ? "text-brand" : "text-ink"}
+    >
+      <path
+        d="M3 8.5 9 6l6 2.5L21 6v15l-6 2.5L9 21l-6 2.5Z M9 6v15 M15 8.5v15"
+        stroke="currentColor"
+      />
+      <path d="M12 11v9" stroke="currentColor" strokeDasharray="1.6 2.2" />
+      {active && (
+        <circle cx="21.5" cy="5" r="3.5" fill="currentColor" stroke="white" strokeWidth="1.5" />
+      )}
     </svg>
   );
 }
 
-function GiftIcon() {
+function GiftIcon({ active }: { active: boolean }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={active ? "text-brand" : "text-ink"}
+    >
       <rect x="3" y="8" width="18" height="4" rx="1" />
       <path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7" />
       <path d="M12 8c-1.5 0-4-1-4-3.2A2.3 2.3 0 0 1 10.3 2c1.8 0 1.7 3 1.7 6ZM12 8c1.5 0 4-1 4-3.2A2.3 2.3 0 0 0 13.7 2c-1.8 0-1.7 3-1.7 6Z" />

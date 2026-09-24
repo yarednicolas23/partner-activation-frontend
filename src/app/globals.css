@@ -12,6 +12,7 @@
   --color-canvas: #eae7eb; /* fondo de página */
   --color-surface: #ffffff; /* cards */
   --color-border: #e6e8e7;
+  --color-nav-pill: #f1f5f8; /* fondo del item activo del navbar (XD) */
 
   /* Pastels — estados/badges (skill minimalist-ui) */
   --color-pastel-red-bg: #fdebec;
@@ -25,6 +26,9 @@
 
   --font-sans:
     -apple-system, "system-ui", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Tipografía del diseño (XD). Aún no hay archivos de la fuente en el repo:
+     se usa si está instalada localmente, si no cae en --font-sans. */
+  --font-display: "Kaspersky Sans Display", var(--font-sans);
 }
 
 @theme inline {
@@ -36,6 +40,7 @@
   --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);
+  --color-nav-pill: var(--color-nav-pill);
   --color-pastel-red-bg: var(--color-pastel-red-bg);
   --color-pastel-red-text: var(--color-pastel-red-text);
   --color-pastel-blue-bg: var(--color-pastel-blue-bg);
@@ -45,6 +50,7 @@
   --color-pastel-yellow-bg: var(--color-pastel-yellow-bg);
   --color-pastel-yellow-text: var(--color-pastel-yellow-text);
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
 }
 
 body {
