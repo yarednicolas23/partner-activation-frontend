@@ -13,6 +13,7 @@
   --color-surface: #ffffff; /* cards */
   --color-border: #e6e8e7;
   --color-nav-pill: #f1f5f8; /* fondo del item activo del navbar (XD) */
+  --color-track: #d6d6d6; /* fondo de las barras de progreso (XD) */
 
   /* Pastels — estados/badges (skill minimalist-ui) */
   --color-pastel-red-bg: #fdebec;
@@ -41,6 +42,7 @@
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);
   --color-nav-pill: var(--color-nav-pill);
+  --color-track: var(--color-track);
   --color-pastel-red-bg: var(--color-pastel-red-bg);
   --color-pastel-red-text: var(--color-pastel-red-text);
   --color-pastel-blue-bg: var(--color-pastel-blue-bg);

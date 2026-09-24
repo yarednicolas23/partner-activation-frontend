@@ -206,7 +206,7 @@ function StageColumn({
                   {progress.completed} de {progress.total} missões concluídas
                 </p>
                 <div
-                  className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-[#d6d6d6]"
+                  className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-track"
                   role="progressbar"
                   aria-valuenow={progress.percent}
                   aria-valuemin={0}
