@@ -24,7 +24,7 @@ const BADGE_CLASS: Record<StageVisualStatus, string> = {
   base: "text-white",
   review: "bg-pastel-yellow-text text-white ring-4 ring-pastel-yellow-bg",
   alert: "bg-pastel-red-text text-white ring-4 ring-pastel-red-bg",
-  completed: "bg-pastel-green-text text-white ring-2 ring-transparent",
+  completed: "bg-brand text-white ring-4 ring-surface shadow-sm",
 };
 
 export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
@@ -50,26 +50,26 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
             className="pointer-events-none absolute inset-x-0"
             style={{ top: `calc(var(--stage-w) + ${STAGE_GAP}px)` }}
           >
-            <div className="relative h-1 -translate-y-1/2">
+            <div className="relative h-1.5 -translate-y-1/2">
               {milestones.slice(0, -1).map((milestone, i) => {
                 const n = milestones.length;
                 const left = ((i + 0.5) / n) * 100;
                 const width = (1 / n) * 100;
+                // Diseño XD: tramo recorrido (etapa concluida → siguiente) en
+                // verde sólido; desde la etapa en curso, gradiente #29CCB1 →
+                // #F1F5F8 que se desvanece. Más adelante no se dibuja.
                 const complete = isMilestoneComplete(milestone);
-                // O trecho que leva até a etapa em andamento usa o gradiente de
-                // progresso (spec XD); os demais seguem sólidos (percorrido vs. pendente).
-                const leadsToCurrent = complete && milestones[i + 1]?.id === current?.id;
+                const isCurrent = milestone.id === current?.id;
+                if (!complete && !isCurrent) return null;
                 return (
                   <motion.div
                     key={milestone.id}
-                    className={`absolute top-0 h-full rounded-full ${
-                      leadsToCurrent ? "" : complete ? "bg-brand" : "bg-border"
-                    }`}
+                    className={`absolute top-0 h-full rounded-full ${complete ? "bg-brand" : ""}`}
                     style={{
                       left: `${left}%`,
                       width: `${width}%`,
                       transformOrigin: "left",
-                      background: leadsToCurrent
+                      background: isCurrent
                         ? `linear-gradient(90deg, var(--color-brand) 0%, ${PROGRESS_GRADIENT_END} 100%)`
                         : undefined,
                     }}
@@ -90,7 +90,6 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
               <StageColumn
                 key={milestone.id}
                 milestone={milestone}
-                selected={milestone.id === selectedId}
                 onSelect={() => {
                   setSelectedId(milestone.id);
                   setModalOpen(true);
@@ -119,18 +118,18 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
 
 function StageColumn({
   milestone,
-  selected,
   onSelect,
   delay,
 }: {
   milestone: MilestoneView;
-  selected: boolean;
   onSelect: () => void;
   delay: number;
 }) {
   const [hovered, setHovered] = useState(false);
   const status = stageVisualStatus(milestone);
   const progress = stageTaskProgress(milestone);
+  // Diseño XD: la etapa en curso muestra siempre el % (también en revisión).
+  const showPercent = !milestone.locked && status !== "completed";
   const showHover = hovered && status === "base";
 
   return (
@@ -166,21 +165,20 @@ function StageColumn({
       <div style={{ height: STAGE_GAP }} />
 
       <div
-        className={`relative z-10 -mt-4 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold shadow-sm transition ${BADGE_CLASS[status]} ${
-          selected ? "outline outline-2 outline-offset-2 outline-ink/20" : ""
-        }`}
+        // 44px, centrado sobre la línea de progreso (-mt = mitad del alto).
+        className={`relative z-10 -mt-[22px] flex h-11 w-11 items-center justify-center rounded-full text-xs font-semibold transition ${showPercent ? "text-white" : BADGE_CLASS[status]}`}
         style={
-          status === "base"
-            ? { background: `conic-gradient(var(--color-brand) ${progress.percent * 3.6}deg, var(--color-brand-soft) 0deg)` }
+          showPercent
+            ? { background: `conic-gradient(var(--color-brand) ${progress.percent * 3.6}deg, #bdeee4 0deg)` }
             : undefined
         }
       >
         {status === "locked" && <LockIcon />}
         {status === "completed" && <CheckIcon />}
-        {status === "review" && <ClockIcon />}
-        {status === "alert" && <AlertIcon />}
-        {status === "base" && (
-          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-surface text-[9px] font-bold leading-none text-brand">
+        
+        
+        {showPercent && (
+          <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-surface text-[11px] font-bold leading-none text-brand">
             {progress.percent}%
           </span>
         )}
@@ -205,20 +203,26 @@ function StageColumn({
                 <p className="mt-1 text-[13px] text-ink">
                   {progress.completed} de {progress.total} missões concluídas
                 </p>
+                {status === "completed" ? (
+                  <p className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-brand">
+                    <CheckIcon small /> Concluída
+                  </p>
+                ) : (
                 <div
-                  className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-track"
-                  role="progressbar"
-                  aria-valuenow={progress.percent}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                >
-                  <motion.div
-                    className="h-full rounded-full bg-brand"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress.percent}%` }}
-                    transition={{ duration: 0.6, delay: 0.3 + delay, ease: "easeOut" }}
-                  />
-                </div>
+                    className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-track"
+                    role="progressbar"
+                    aria-valuenow={progress.percent}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <motion.div
+                      className="h-full rounded-full bg-brand"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress.percent}%` }}
+                      transition={{ duration: 0.6, delay: 0.3 + delay, ease: "easeOut" }}
+                    />
+                  </div>
+                )}
               </>
             )}
           </>
@@ -276,41 +280,3 @@ function CheckIcon({ small }: { small?: boolean }) {
   );
 }
 
-function ClockIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 9v4" />
-      <path d="M10.3 3.9 1.8 18a1.5 1.5 0 0 0 1.3 2.3h17.8a1.5 1.5 0 0 0 1.3-2.3L13.7 3.9a1.5 1.5 0 0 0-2.6 0Z" />
-      <path d="M12 17h.01" />
-    </svg>
-  );
-}
