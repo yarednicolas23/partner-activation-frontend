@@ -15,16 +15,73 @@ export function EvidenceQueue({ initialItems }: { initialItems: EvidenceQueueIte
   }
 
   return (
-    <div className="space-y-4">
-      {items.map((item) => (
-        <EvidenceCard
-          key={item.id}
-          item={item}
-          onReviewed={() =>
-            setItems((current) => current.filter((i) => i.id !== item.id))
-          }
-        />
+    <div className="space-y-10">
+      {groupByPartner(items).map((group) => (
+        <section key={group.partner.id}>
+          <PartnerHeader group={group} />
+          <div className="space-y-4">
+            {group.items.map((item) => (
+              <EvidenceCard
+                key={item.id}
+                item={item}
+                onReviewed={() =>
+                  setItems((current) => current.filter((i) => i.id !== item.id))
+                }
+              />
+            ))}
+          </div>
+        </section>
       ))}
+    </div>
+  );
+}
+
+interface PartnerGroup {
+  partner: EvidenceQueueItem["partner"];
+  // Las etapas son secuenciales: la más alta con evidencia pendiente es la
+  // etapa en la que está el parceiro.
+  milestone: EvidenceQueueItem["milestone"];
+  items: EvidenceQueueItem[];
+}
+
+function groupByPartner(items: EvidenceQueueItem[]): PartnerGroup[] {
+  const groups = new Map<string, PartnerGroup>();
+  for (const item of items) {
+    const group = groups.get(item.partner.id);
+    if (!group) {
+      groups.set(item.partner.id, {
+        partner: item.partner,
+        milestone: item.milestone,
+        items: [item],
+      });
+      continue;
+    }
+    group.items.push(item);
+    if (item.milestone.order_index > group.milestone.order_index) {
+      group.milestone = item.milestone;
+    }
+  }
+  return [...groups.values()];
+}
+
+function PartnerHeader({ group }: { group: PartnerGroup }) {
+  const count = group.items.length;
+  return (
+    <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border pb-3">
+      <div>
+        <p className="text-lg font-bold uppercase tracking-tight text-ink">
+          {group.partner.full_name ?? group.partner.email}
+        </p>
+        <p className="text-sm text-ink-muted">
+          está na{" "}
+          <span className="font-semibold text-brand">
+            Etapa {group.milestone.order_index} — {group.milestone.title}
+          </span>{" "}
+          · {count} {count === 1 ? "nova evidência" : "novas evidências"} para
+          revisar
+        </p>
+      </div>
+      <p className="text-xs text-ink-muted">{group.partner.email}</p>
     </div>
   );
 }
@@ -71,11 +128,13 @@ function EvidenceCard({
     <div className="rounded-lg border border-border bg-surface p-6">
       <div className="mb-3 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-ink">
-            {item.milestone.title} — {item.task.title}
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Etapa {item.milestone.order_index} · {item.milestone.title}
           </p>
-          <p className="text-sm text-ink-muted">
-            {item.partner.full_name ?? item.partner.email} · {item.partner.email}
+          <p className="text-sm font-medium text-ink">{item.task.title}</p>
+          <p className="text-xs text-ink-muted">
+            Enviada em{" "}
+            {new Date(item.submitted_at).toLocaleDateString("pt-BR")}
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-pastel-yellow-bg px-2.5 py-0.5 text-xs font-medium text-pastel-yellow-text">
@@ -102,7 +161,7 @@ function EvidenceCard({
       <textarea
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Nota (opcional)"
+        placeholder="Nota (opcional) — se não aprovado, é enviada ao parceiro por e-mail e aparece na plataforma"
         rows={2}
         className="mb-3 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
       />
