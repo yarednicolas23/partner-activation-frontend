@@ -186,34 +186,42 @@ function StageColumn({
         )}
       </div>
 
-      <div className="mt-3 space-y-0.5">
-        <p className="text-xs text-ink-muted">
+      {/* Diseño XD: bloque alineado a la izquierda, centrado bajo el badge. */}
+      <div className="mt-3 w-[calc(var(--stage-w)*0.8)] text-left font-display">
+        <p className="text-[13px] text-ink-muted">
           Etapa {milestone.order_index} de 5
         </p>
-        <p className="text-sm font-semibold text-ink">
-          {milestone.locked ? (
-            <span className="inline-flex items-center gap-1 text-ink-muted">
-              <LockIcon /> Bloqueada
-            </span>
-          ) : (
-            milestone.title
-          )}
-        </p>
-        {!milestone.locked && progress.total > 0 && (
-          <p className="text-xs text-ink-muted">
-            {progress.completed} de {progress.total} missões
+        {milestone.locked ? (
+          <p className="mt-1 flex items-center gap-2.5 text-base font-medium text-ink">
+            <LockFilledIcon /> Bloqueada
           </p>
-        )}
-        {status === "completed" && (
-          <p className="flex items-center justify-center gap-1 text-xs font-medium text-pastel-green-text">
-            <CheckIcon small /> Concluída
-          </p>
-        )}
-        {status === "review" && (
-          <p className="text-xs font-medium text-pastel-yellow-text">Em análise</p>
-        )}
-        {status === "alert" && (
-          <p className="text-xs font-medium text-pastel-red-text">Requer atenção</p>
+        ) : (
+          <>
+            <p className="mt-0.5 text-[17px] font-bold leading-snug text-ink">
+              {milestone.title}
+            </p>
+            {progress.total > 0 && (
+              <>
+                <p className="mt-1 text-[13px] text-ink">
+                  {progress.completed} de {progress.total} missões concluídas
+                </p>
+                <div
+                  className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-[#d6d6d6]"
+                  role="progressbar"
+                  aria-valuenow={progress.percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <motion.div
+                    className="h-full rounded-full bg-brand"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress.percent}%` }}
+                    transition={{ duration: 0.6, delay: 0.3 + delay, ease: "easeOut" }}
+                  />
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
     </button>
@@ -235,6 +243,16 @@ function LockIcon() {
     >
       <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+function LockFilledIcon() {
+  return (
+    <svg width="14" height="17" viewBox="0 0 14 17" aria-hidden="true">
+      <path d="M3.5 7V4.5a3.5 3.5 0 0 1 7 0V7" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="0.5" y="6.5" width="13" height="10" rx="2" fill="currentColor" />
+      <path d="M7 10.5v2.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
