@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { Reward } from "@/lib/types";
+import { REWARD_IMAGES } from "./reward-form";
 
 const TYPE_LABEL: Record<string, string> = {
   physical: "Físico",
@@ -51,12 +53,12 @@ function RewardRow({
 }) {
   const [status, setStatus] = useState<"idle" | "sending">("idle");
 
-  async function toggleActive() {
+  async function update(body: { isActive?: boolean; imageUrl?: string }) {
     setStatus("sending");
     const res = await fetch(`/api/admin/rewards/${reward.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !reward.is_active }),
+      body: JSON.stringify(body),
     });
     if (res.ok) {
       onUpdated((await res.json()) as Reward);
@@ -66,7 +68,16 @@ function RewardRow({
 
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-surface p-6">
-      <div>
+      <span className="relative h-16 w-16 shrink-0 rounded-md bg-canvas">
+        <Image
+          src={reward.image_url || "/blocked-gift/blocked-gift.png"}
+          alt=""
+          fill
+          sizes="64px"
+          className="object-contain p-1.5"
+        />
+      </span>
+      <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
           <p className="text-sm font-medium text-ink">{reward.title}</p>
           <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs font-medium text-ink-muted">
@@ -80,11 +91,25 @@ function RewardRow({
           Requer: {milestoneTitle}
           {reward.stock !== null && ` · Estoque: ${reward.stock}`}
         </p>
+        <select
+          aria-label="Imagem do reward"
+          value={reward.image_url ?? ""}
+          disabled={status === "sending"}
+          onChange={(e) => update({ imageUrl: e.target.value })}
+          className="mt-2 rounded-md border border-border bg-surface px-2 py-1 text-xs text-ink outline-none focus:border-brand disabled:opacity-60"
+        >
+          <option value="">Sem imagem</option>
+          {REWARD_IMAGES.map((img) => (
+            <option key={img.value} value={img.value}>
+              {img.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <button
         type="button"
-        onClick={toggleActive}
+        onClick={() => update({ isActive: !reward.is_active })}
         disabled={status === "sending"}
         className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
           reward.is_active

@@ -244,12 +244,14 @@ function RewardCard({
     <div className="flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-2xl bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
       <div className="relative aspect-square shrink-0 p-8">
         <Image
-          src="/blocked-gift/blocked-gift.png"
-          alt=""
+          src={reward.image_url || "/blocked-gift/blocked-gift.png"}
+          alt={reward.image_url ? reward.title : ""}
           fill
           priority
           sizes="256px"
-          className="object-contain p-4"
+          className={`object-contain p-4 transition ${
+            status === "locked" && reward.image_url ? "opacity-40 grayscale" : ""
+          }`}
         />
         {status === "locked" ? (
           <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-brand bg-surface text-ink-muted">

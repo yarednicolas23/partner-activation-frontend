@@ -4,6 +4,16 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import type { Reward, RewardType } from "@/lib/types";
 
+// Imágenes disponibles en frontend/public/rewards — agregar acá al sumar una.
+export const REWARD_IMAGES = [
+  { value: "/rewards/kit_onboarding.png", label: "Kit onboarding" },
+  { value: "/rewards/caneca.png", label: "Caneca" },
+  { value: "/rewards/lunchbox.png", label: "Lancheira" },
+  { value: "/rewards/case.png", label: "Case" },
+  { value: "/rewards/fone.jpg", label: "Fone de ouvido" },
+  { value: "/rewards/kindle.webp", label: "Kindle" },
+];
+
 const TYPE_LABEL: Record<RewardType, string> = {
   physical: "Físico",
   digital: "Digital",
@@ -22,6 +32,7 @@ export function RewardForm({
   const [type, setType] = useState<RewardType>("physical");
   const [milestoneId, setMilestoneId] = useState(milestones[0]?.id ?? "");
   const [stock, setStock] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -37,6 +48,7 @@ export function RewardForm({
         type,
         milestoneId,
         stock: stock === "" ? undefined : Number(stock),
+        imageUrl: imageUrl || undefined,
       }),
     });
 
@@ -51,6 +63,7 @@ export function RewardForm({
     setTitle("");
     setDescription("");
     setStock("");
+    setImageUrl("");
   }
 
   return (
@@ -135,6 +148,25 @@ export function RewardForm({
           {milestones.map((m) => (
             <option key={m.id} value={m.id}>
               {m.order_index}. {m.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="imageUrl" className="mb-1.5 block text-sm font-medium text-ink">
+          Imagem <span className="text-ink-muted">(opcional)</span>
+        </label>
+        <select
+          id="imageUrl"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+        >
+          <option value="">Sem imagem (presente genérico)</option>
+          {REWARD_IMAGES.map((img) => (
+            <option key={img.value} value={img.value}>
+              {img.label}
             </option>
           ))}
         </select>
