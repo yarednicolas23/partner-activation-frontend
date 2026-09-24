@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { MilestoneView } from "@/lib/types";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "./stage-art";
 
@@ -56,14 +57,14 @@ export function ProgressFooter({
   return (
     <div className="mt-6 grid gap-6 rounded-[10px] bg-surface p-6 shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:grid-cols-3 sm:divide-x sm:divide-border">
       <Stat
-        icon={<ClockIcon />}
-        label="Tempo restante do programa"
+        icon="/clock.svg"
+        label="Tempo restante para concluir o programa"
         value={timeRemainingLabel(deadline)}
         valueClassName="text-brand"
       />
       <Stat
         className="sm:pl-6"
-        icon={<CapIcon />}
+        icon="/safari.svg"
         label="Etapa atual"
         value={allDone ? "Programa concluído" : (current?.title ?? "—")}
         sub={
@@ -74,7 +75,7 @@ export function ProgressFooter({
       />
       <Stat
         className="sm:pl-6"
-        icon={<SkipIcon />}
+        icon="/next.svg"
         label="Próxima etapa"
         value={allDone ? "—" : next ? `Etapa ${next.order_index}` : "Última etapa"}
         valueClassName="text-brand"
@@ -96,50 +97,24 @@ function Stat({
   valueClassName = "text-ink",
   className = "",
 }: {
-  icon: React.ReactNode;
+  icon: string;
   label: string;
   value: string;
   sub?: string;
   valueClassName?: string;
   className?: string;
 }) {
+  // Diseño XD: ícono en tile de 56px, fondo #F1F5F8, radius 16px.
   return (
-    <div className={`flex items-start gap-3 ${className}`}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
-        {icon}
+    <div className={`flex items-center gap-4 ${className}`}>
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-nav-pill">
+        <Image src={icon} alt="" width={31} height={31} className="h-[31px] w-auto" />
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 font-display">
         <p className="text-sm text-ink-muted">{label}</p>
-        <p className={`text-base font-semibold ${valueClassName}`}>{value}</p>
+        <p className={`text-[22px] font-semibold leading-tight ${valueClassName}`}>{value}</p>
         {sub && <p className="text-xs text-ink-muted">{sub}</p>}
       </div>
     </div>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" />
-    </svg>
-  );
-}
-
-function CapIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m12 3 10 5-10 5L2 8Z" />
-      <path d="M6 10.5V16c0 1.1 2.7 3 6 3s6-1.9 6-3v-5.5" />
-    </svg>
-  );
-}
-
-function SkipIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 4v16l10-8Z" />
-      <path d="M19 5v14" />
-    </svg>
   );
 }
