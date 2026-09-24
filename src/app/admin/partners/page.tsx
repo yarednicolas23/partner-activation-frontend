@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { PartnersExportButton } from "./export-button";
+import { ResendInviteButton } from "./resend-invite-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -81,6 +82,7 @@ export default async function AdminPartnersListPage() {
                   <th className="px-4 py-3 font-medium">E-mail</th>
                   <th className="px-4 py-3 font-medium">Empresa</th>
                   <th className="px-4 py-3 font-medium">Convidado em</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -103,6 +105,9 @@ export default async function AdminPartnersListPage() {
                     </td>
                     <td className="px-4 py-3 text-ink-muted">
                       {new Date(partner.created_at).toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <ResendInviteButton partnerId={partner.id} />
                     </td>
                   </tr>
                 ))}

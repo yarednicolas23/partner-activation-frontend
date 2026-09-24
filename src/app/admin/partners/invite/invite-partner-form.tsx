@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -99,7 +100,12 @@ export function InvitePartnerForm() {
 
       {status === "conflict" && (
         <p className="text-sm text-pastel-red-text">
-          Já existe um usuário com esse e-mail.
+          Já existe um usuário com esse e-mail. Para enviar um novo link de
+          acesso, use{" "}
+          <Link href="/admin/partners" className="font-semibold underline">
+            Reenviar convite
+          </Link>{" "}
+          na lista de parceiros.
         </p>
       )}
 
