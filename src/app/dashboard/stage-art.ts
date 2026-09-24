@@ -5,7 +5,9 @@ import type { MilestoneView } from "@/lib/types";
 export type StageVisualStatus = "locked" | "base" | "review" | "alert" | "completed";
 
 const VARIANT_LABEL: Record<StageVisualStatus, string> = {
-  locked: "01 - Blocked",
+  // Decisión de diseño: las etapas bloqueadas muestran el edificio "Base"
+  // (el estado bloqueado ya lo indican el candado y el texto "Bloqueada").
+  locked: "02 - Base",
   base: "02 - Base",
   review: "03 - Review",
   alert: "04 - Alert",
