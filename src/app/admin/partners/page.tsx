@@ -33,7 +33,7 @@ export default async function AdminPartnersListPage() {
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   const profile = await getProfile(session.access_token);

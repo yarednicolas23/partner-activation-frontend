@@ -5,7 +5,31 @@ import { createClient } from "@/lib/supabase/client";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
-export function LoginForm() {
+// El login ADM (/admin/login) reusa este mismo form: solo cambian los
+// textos y a dónde vuelve el usuario después del link.
+const COPY = {
+  partner: {
+    label: "E-mail corporativo",
+    placeholder: "voce@suaempresa.com",
+    submit: "Enviar link de acesso",
+    next: "/dashboard",
+  },
+  admin: {
+    label: "E-mail Kaspersky",
+    placeholder: "nome.sobrenome@kaspersky.com",
+    submit: "Acessar painel",
+    next: "/admin/dashboard",
+  },
+} as const;
+
+export function LoginForm({
+  variant = "partner",
+}: {
+  variant?: keyof typeof COPY;
+}) {
+  const copy = COPY[variant];
+  const redirectTo = () =>
+    `${window.location.origin}/auth/callback?next=${encodeURIComponent(copy.next)}`;
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   // Temporal: vuelve el login con Google mientras el envío de magic links
@@ -23,7 +47,10 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectTo(),
+        // Solo usuarios pre-registrados (invitados por Kaspersky) pueden
+        // entrar — sin esto, cualquier email crearía una cuenta nueva.
+        shouldCreateUser: false,
       },
     });
 
@@ -37,7 +64,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectTo(),
       },
     });
 
@@ -57,7 +84,7 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink">
-          E-mail corporativo
+          {copy.label}
         </label>
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-muted">
@@ -70,7 +97,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="voce@suaempresa.com"
+            placeholder={copy.placeholder}
             className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </div>
@@ -87,7 +114,7 @@ export function LoginForm() {
         disabled={status === "sending"}
         className="w-full rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "sending" ? "Enviando..." : "Enviar link de acesso"}
+        {status === "sending" ? "Enviando..." : copy.submit}
       </button>
 
       <div className="flex items-center gap-3">

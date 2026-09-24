@@ -45,7 +45,7 @@ export default async function AdminEvidencePage() {
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   const profile = await getProfile(session.access_token);
