@@ -15,17 +15,19 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
       <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8 sm:py-5">
         <Link
           href={isAdmin ? "/admin/dashboard" : "/dashboard"}
-          className="flex items-center gap-2.5"
+          className="flex items-center"
         >
+          {/* Logo horizontal armado con los trazos de logo-partnert-quest.svg
+              (tipografía Kaspersky Sans Display ya vectorizada) — no depende
+              de cargar la fuente. */}
           <Image
-            src="/Kaspersky_logo.svg.webp"
-            alt="Kaspersky"
-            width={110}
-            height={23}
+            src="/logo-navbar.svg"
+            alt="Kaspersky Partner Quest"
+            width={319}
+            height={25}
             priority
+            className="h-5 w-auto sm:h-6"
           />
-          <span className="h-4 w-px bg-border" aria-hidden="true" />
-          <span className="text-sm font-medium text-ink-muted">Partner Quest</span>
         </Link>
 
         <nav className="flex items-center gap-1 text-sm">
