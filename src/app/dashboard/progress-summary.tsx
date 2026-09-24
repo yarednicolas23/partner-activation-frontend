@@ -31,7 +31,7 @@ export function ProgressSummary({
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:w-[560px] lg:shrink-0">
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-[10px] bg-surface p-5 shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
         <p className="text-sm text-ink-muted">Progresso geral</p>
         <p className="mt-1 text-3xl font-bold tracking-tight text-brand">{percent}%</p>
         <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
@@ -58,7 +58,7 @@ export function ProgressSummary({
 
       <Link
         href="/dashboard/rewards"
-        className="group flex flex-col justify-center rounded-2xl border border-border bg-surface p-5 transition hover:border-brand"
+        className="group flex flex-col justify-center rounded-[10px] bg-surface p-5 shadow-[0px_3px_6px_rgba(0,0,0,0.16)] transition hover:shadow-[0px_4px_10px_rgba(0,0,0,0.2)]"
       >
         <span className="relative mb-1 h-12 w-12 shrink-0">
           <Image src="/blocked-gift/blocked-gift.png" alt="" fill sizes="48px" className="object-contain" />
