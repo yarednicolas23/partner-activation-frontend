@@ -13,9 +13,6 @@ export function RewardsCatalog({
   milestones: { id: string; order_index: number; title: string }[];
 }) {
   const [rewards, setRewards] = useState(initialRewards);
-  const milestoneTitleById = Object.fromEntries(
-    milestones.map((m) => [m.id, `${m.order_index}. ${m.title}`]),
-  );
 
   function upsert(reward: Reward) {
     setRewards((current) => {
@@ -26,13 +23,18 @@ export function RewardsCatalog({
     });
   }
 
+  function remove(id: string) {
+    setRewards((current) => current.filter((r) => r.id !== id));
+  }
+
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_1.2fr]">
-      <RewardForm milestones={milestones} onCreated={upsert} />
+    <div className="grid items-start gap-6 md:grid-cols-[1fr_1.2fr]">
+      <RewardForm milestones={milestones} onSaved={upsert} />
       <RewardsList
         rewards={rewards}
-        milestoneTitleById={milestoneTitleById}
+        milestones={milestones}
         onUpdated={upsert}
+        onDeleted={remove}
       />
     </div>
   );

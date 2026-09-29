@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile, RedemptionQueueItem, Reward } from "@/lib/types";
@@ -50,7 +51,16 @@ async function getRedemptionQueue(
   return res.json();
 }
 
-export default async function AdminRewardsPage() {
+type Tab = "catalogo" | "solicitacoes";
+
+export default async function AdminRewardsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab: tabParam } = await searchParams;
+  const tab: Tab = tabParam === "solicitacoes" ? "solicitacoes" : "catalogo";
+
   const supabase = await createClient();
   const {
     data: { session },
@@ -71,6 +81,8 @@ export default async function AdminRewardsPage() {
     getRedemptionQueue(session.access_token),
   ]);
 
+  const pendingCount = redemptions.filter((r) => r.status === "pending").length;
+
   return (
     <>
       <Navbar profile={profile} />
@@ -82,27 +94,83 @@ export default async function AdminRewardsPage() {
           Catálogo e solicitações de resgate dos parceiros.
         </p>
 
-        <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
-          Catálogo
-        </h2>
-        {milestones.length === 0 ? (
-          <p className="mb-8 text-sm text-ink-muted">
-            Nenhuma etapa cadastrada ainda.
-          </p>
-        ) : (
-          <div className="mb-8">
-            <RewardsCatalog initialRewards={rewards} milestones={milestones} />
-          </div>
-        )}
-
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold tracking-tight text-ink">
+        <nav
+          aria-label="Seções de recompensas"
+          className="mb-8 flex gap-1 border-b border-border"
+        >
+          <TabLink href="/admin/rewards" active={tab === "catalogo"}>
+            Catálogo
+            <Count value={rewards.length} />
+          </TabLink>
+          <TabLink
+            href="/admin/rewards?tab=solicitacoes"
+            active={tab === "solicitacoes"}
+          >
             Solicitações de resgate
-          </h2>
-          <RedemptionsExportButton rows={redemptions} />
-        </div>
-        <RedemptionQueue initialItems={redemptions} />
+            <Count value={pendingCount} highlight={pendingCount > 0} />
+          </TabLink>
+        </nav>
+
+        {tab === "catalogo" ? (
+          milestones.length === 0 ? (
+            <p className="text-sm text-ink-muted">
+              Nenhuma etapa cadastrada ainda.
+            </p>
+          ) : (
+            <RewardsCatalog initialRewards={rewards} milestones={milestones} />
+          )
+        ) : (
+          <>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-ink-muted">
+                {pendingCount} pendente{pendingCount === 1 ? "" : "s"} de{" "}
+                {redemptions.length} solicitaç
+                {redemptions.length === 1 ? "ão" : "ões"}.
+              </p>
+              <RedemptionsExportButton rows={redemptions} />
+            </div>
+            <RedemptionQueue initialItems={redemptions} />
+          </>
+        )}
       </main>
     </>
+  );
+}
+
+function TabLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+        active
+          ? "border-brand text-ink"
+          : "border-transparent text-ink-muted hover:text-ink"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function Count({ value, highlight }: { value: number; highlight?: boolean }) {
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+        highlight
+          ? "bg-pastel-yellow-bg text-pastel-yellow-text"
+          : "bg-canvas text-ink-muted"
+      }`}
+    >
+      {value}
+    </span>
   );
 }
