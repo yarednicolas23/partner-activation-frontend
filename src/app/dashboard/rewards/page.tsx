@@ -80,6 +80,7 @@ export default async function RewardsPage() {
         {profile ? (
           <>
             <RewardCatalog
+              profile={profile}
               catalog={catalog}
               milestones={milestones}
               initialRedemptions={myRedemptions}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RedemptionQueueItem, RedemptionStatus } from "@/lib/types";
+import { addressLines, formatPhone } from "@/lib/address";
 
 const STATUS_LABEL: Record<RedemptionStatus, string> = {
   pending: "Pendente",
@@ -91,6 +92,27 @@ function RedemptionCard({
           {STATUS_LABEL[item.status]}
         </span>
       </div>
+
+      {item.shipping_address && (
+        <div className="mb-3 rounded-md bg-canvas px-3 py-2 text-sm text-ink-muted">
+          <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-ink">
+            Endereço de entrega
+          </p>
+          <address className="not-italic">
+            {item.shipping_address.recipient_name && (
+              <span className="block text-ink">{item.shipping_address.recipient_name}</span>
+            )}
+            {addressLines(item.shipping_address).map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+            {item.shipping_address.phone && (
+              <span className="block">Tel. {formatPhone(item.shipping_address.phone)}</span>
+            )}
+          </address>
+        </div>
+      )}
 
       {actions.length > 0 && (
         <>

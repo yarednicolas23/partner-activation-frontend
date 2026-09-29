@@ -5,8 +5,28 @@ export interface PartnerProfile {
   full_name: string | null;
   company_name: string | null;
   role: "partner" | "admin";
+  phone: string | null;
+  address_cep: string | null;
+  address_street: string | null;
+  address_number: string | null;
+  address_complement: string | null;
+  address_neighborhood: string | null;
+  address_city: string | null;
+  address_state: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ShippingAddress {
+  recipient_name: string | null;
+  phone: string | null;
+  cep: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
 }
 
 // Espejo de backend/src/milestones/milestone.interfaces.ts
@@ -84,6 +104,7 @@ export interface RewardRedemption {
   reviewed_by: string | null;
   reviewed_at: string | null;
   requested_at: string;
+  shipping_address: ShippingAddress | null;
 }
 
 export interface RedemptionQueueItem extends RewardRedemption {

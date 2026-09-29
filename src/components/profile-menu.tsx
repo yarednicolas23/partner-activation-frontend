@@ -67,6 +67,17 @@ export function ProfileMenu({
         >
           {!isAdmin && (
             <Link
+              href="/dashboard/perfil"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-ink transition hover:bg-canvas"
+            >
+              <UserIcon />
+              Meu perfil
+            </Link>
+          )}
+          {!isAdmin && (
+            <Link
               href="/dashboard/historico"
               role="menuitem"
               onClick={() => setOpen(false)}
@@ -114,6 +125,15 @@ function ChevronIcon({ open }: { open: boolean }) {
       className={`shrink-0 text-ink-muted transition-transform ${open ? "rotate-180" : ""}`}
     >
       <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
     </svg>
   );
 }

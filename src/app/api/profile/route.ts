@@ -1,11 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
+export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   const {
     data: { session },
@@ -15,13 +11,13 @@ export async function POST(
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const res = await fetch(`${process.env.BACKEND_URL}/rewards/${id}/redeem`, {
-    method: "POST",
+  const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify(await request.json().catch(() => ({}))),
+    body: JSON.stringify(await request.json()),
   });
 
   const data = await res.json();

@@ -5,9 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type {
   MilestoneView,
+  PartnerProfile,
   RedemptionQueueItem,
   RewardWithMilestone,
+  ShippingAddress,
 } from "@/lib/types";
+import { addressLines, formatPhone, shippingAddressFromProfile } from "@/lib/address";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "../stage-art";
 
 type CardStatus = "locked" | "available" | "pending" | "shipping" | "delivered" | "rejected";
@@ -89,16 +92,26 @@ function cardStatus(
   return "rejected";
 }
 
+const PROFILE_ADDRESS_HREF = "/dashboard/perfil?next=/dashboard/rewards#endereco";
+
+function needsShipping(reward: RewardWithMilestone): boolean {
+  return reward.type !== "digital";
+}
+
 export function RewardCatalog({
+  profile,
   catalog,
   milestones,
   initialRedemptions,
 }: {
+  profile: PartnerProfile;
   catalog: RewardWithMilestone[];
   milestones: MilestoneView[];
   initialRedemptions: RedemptionQueueItem[];
 }) {
   const [redemptions, setRedemptions] = useState(initialRedemptions);
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const address = shippingAddressFromProfile(profile);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const redemptionByReward = new Map(redemptions.map((r) => [r.reward_id, r]));
@@ -145,6 +158,12 @@ export function RewardCatalog({
         )}
       </div>
 
+      <ShippingAddressCard
+        address={address}
+        confirmed={addressConfirmed}
+        onConfirmedChange={setAddressConfirmed}
+      />
+
       {sorted.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-ink-muted">
           Nenhuma recompensa cadastrada ainda.
@@ -164,6 +183,8 @@ export function RewardCatalog({
                 reward={reward}
                 status={cardStatus(reward, milestones, redemptionByReward.get(reward.id))}
                 redemption={redemptionByReward.get(reward.id)}
+                hasAddress={address !== null}
+                addressConfirmed={addressConfirmed}
                 onRedeemed={(redemption) =>
                   setRedemptions((current) => [redemption, ...current])
                 }
@@ -172,6 +193,76 @@ export function RewardCatalog({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ShippingAddressCard({
+  address,
+  confirmed,
+  onConfirmedChange,
+}: {
+  address: ShippingAddress | null;
+  confirmed: boolean;
+  onConfirmedChange: (confirmed: boolean) => void;
+}) {
+  if (!address) {
+    return (
+      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-center">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pastel-yellow-bg text-pastel-yellow-text">
+          <PinIcon />
+        </span>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-ink">Endereço de entrega não cadastrado</p>
+          <p className="text-sm text-ink-muted">
+            Para resgatar recompensas físicas, cadastre e confirme seu endereço no perfil.
+          </p>
+        </div>
+        <Link
+          href={PROFILE_ADDRESS_HREF}
+          className="shrink-0 rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-brand-hover"
+        >
+          Cadastrar endereço →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-8 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+          <PinIcon />
+        </span>
+        <div className="flex-1">
+          <p className="mb-1 text-sm font-semibold text-ink">Endereço de entrega</p>
+          <address className="text-sm not-italic leading-relaxed text-ink-muted">
+            {address.recipient_name && <span className="block text-ink">{address.recipient_name}</span>}
+            {addressLines(address).map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+            {address.phone && <span className="block">Tel. {formatPhone(address.phone)}</span>}
+          </address>
+        </div>
+        <Link
+          href={PROFILE_ADDRESS_HREF}
+          className="shrink-0 text-sm font-medium text-ink-muted underline transition hover:text-ink"
+        >
+          Alterar endereço
+        </Link>
+      </div>
+
+      <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl bg-canvas px-4 py-3 text-sm text-ink">
+        <input
+          type="checkbox"
+          checked={confirmed}
+          onChange={(e) => onConfirmedChange(e.target.checked)}
+          className="h-4 w-4 shrink-0 accent-brand"
+        />
+        Confirmo que este é o endereço para envio das minhas recompensas.
+      </label>
     </div>
   );
 }
@@ -195,20 +286,31 @@ function RewardCard({
   reward,
   status,
   redemption,
+  hasAddress,
+  addressConfirmed,
   onRedeemed,
 }: {
   reward: RewardWithMilestone;
   status: CardStatus;
   redemption: RedemptionQueueItem | undefined;
+  hasAddress: boolean;
+  addressConfirmed: boolean;
   onRedeemed: (redemption: RedemptionQueueItem) => void;
 }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(false);
 
+  const shipping = needsShipping(reward);
+  const blockedByAddress = shipping && (!hasAddress || !addressConfirmed);
+
   async function handleRedeem() {
     setSending(true);
     setError(false);
-    const res = await fetch(`/api/rewards/${reward.id}/redeem`, { method: "POST" });
+    const res = await fetch(`/api/rewards/${reward.id}/redeem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ addressConfirmed: shipping ? addressConfirmed : undefined }),
+    });
 
     if (!res.ok) {
       setSending(false);
@@ -300,12 +402,25 @@ function RewardCard({
               <button
                 type="button"
                 onClick={handleRedeem}
-                disabled={sending}
+                disabled={sending || blockedByAddress}
                 className="flex w-full items-center justify-center gap-1 rounded-full bg-brand px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {sending ? "Enviando..." : "Resgatar recompensa"}
                 {!sending && <ChevronRightIcon />}
               </button>
+            )}
+
+            {status === "available" && shipping && !hasAddress && (
+              <p className="text-xs text-ink-muted">
+                <Link href={PROFILE_ADDRESS_HREF} className="font-semibold text-brand underline">
+                  Cadastre seu endereço
+                </Link>{" "}
+                para resgatar.
+              </p>
+            )}
+
+            {status === "available" && shipping && hasAddress && !addressConfirmed && (
+              <p className="text-xs text-ink-muted">Confirme o endereço de entrega acima para resgatar.</p>
             )}
 
             {status === "available" && error && (
@@ -339,6 +454,15 @@ function RewardCard({
         )}
       </div>
     </div>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
   );
 }
 
