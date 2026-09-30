@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile } from "@/lib/types";
+import { formatCep, shippingAddressFromProfile } from "@/lib/address";
 import { Navbar } from "@/components/navbar";
 import { PartnersExportButton } from "./export-button";
 import { ResendInviteButton } from "./resend-invite-button";
@@ -47,7 +48,7 @@ export default async function AdminPartnersListPage() {
   return (
     <>
       <Navbar profile={profile} />
-      <main className="mx-auto w-full max-w-3xl px-6 py-16">
+      <main className="mx-auto w-full max-w-5xl px-6 py-16">
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
@@ -81,6 +82,7 @@ export default async function AdminPartnersListPage() {
                   <th className="px-4 py-3 font-medium">Nome</th>
                   <th className="px-4 py-3 font-medium">E-mail</th>
                   <th className="px-4 py-3 font-medium">Empresa</th>
+                  <th className="px-4 py-3 font-medium">Endereço</th>
                   <th className="px-4 py-3 font-medium">Convidado em</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -103,6 +105,9 @@ export default async function AdminPartnersListPage() {
                     <td className="px-4 py-3 text-ink">
                       {partner.company_name ?? "—"}
                     </td>
+                    <td className="px-4 py-3">
+                      <PartnerAddress partner={partner} />
+                    </td>
                     <td className="px-4 py-3 text-ink-muted">
                       {new Date(partner.created_at).toLocaleDateString("pt-BR")}
                     </td>
@@ -117,5 +122,36 @@ export default async function AdminPartnersListPage() {
         )}
       </main>
     </>
+  );
+}
+
+function PartnerAddress({ partner }: { partner: PartnerProfile }) {
+  const address = shippingAddressFromProfile(partner);
+
+  if (!address) {
+    const hasAny = [
+      partner.address_cep,
+      partner.address_street,
+      partner.address_number,
+      partner.address_neighborhood,
+      partner.address_city,
+      partner.address_state,
+    ].some(Boolean);
+
+    return (
+      <span className="text-ink-muted">{hasAny ? "Incompleto" : "—"}</span>
+    );
+  }
+
+  return (
+    <address className="not-italic">
+      <span className="block text-ink">
+        {address.street}, {address.number}
+        {address.complement ? ` — ${address.complement}` : ""}
+      </span>
+      <span className="block text-xs text-ink-muted">
+        {address.city} — {address.state} · CEP {formatCep(address.cep)}
+      </span>
+    </address>
   );
 }
