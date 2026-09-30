@@ -369,6 +369,15 @@ function RewardCard({
             {meta!.label}
           </span>
         )}
+        {reward.image_url && (
+          // Dos líneas para no chocar con el pill de estado (arriba a la
+          // izquierda) en una card de 256px.
+          <span className="absolute right-3 top-3 rounded-lg border border-border bg-surface/90 px-2 py-1 text-right text-[10px] font-medium leading-tight text-ink-muted backdrop-blur-sm">
+            Imagem
+            <br />
+            ilustrativa
+          </span>
+        )}
       </div>
 
       <div className="border-t border-border" />
