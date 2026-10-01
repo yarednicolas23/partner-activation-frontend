@@ -3,16 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import type { Reward } from "@/lib/types";
-
-// Imágenes disponibles en frontend/public/rewards — agregar acá al sumar una.
-export const REWARD_IMAGES = [
-  { value: "/rewards/kit_onboarding.png", label: "Kit onboarding" },
-  { value: "/rewards/caneca.png", label: "Caneca" },
-  { value: "/rewards/lunchbox.png", label: "Lancheira" },
-  { value: "/rewards/case.png", label: "Case" },
-  { value: "/rewards/fone.jpg", label: "Fone de ouvido" },
-  { value: "/rewards/kindle.webp", label: "Kindle" },
-];
+import {
+  RewardImageField,
+  initialRewardImage,
+  rewardImagePayload,
+  type RewardImage,
+} from "./reward-image-field";
 
 const inputClass =
   "w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand";
@@ -36,7 +32,8 @@ export function RewardForm({
   const [title, setTitle] = useState(reward?.title ?? "");
   const [description, setDescription] = useState(reward?.description ?? "");
   const [milestoneId, setMilestoneId] = useState(reward?.milestone_id ?? milestones[0]?.id ?? "");
-  const [imageUrl, setImageUrl] = useState(reward?.image_url ?? "");
+  const [image, setImage] = useState<RewardImage>(() => initialRewardImage(reward));
+  const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -48,10 +45,10 @@ export function RewardForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title,
-        // Na edição, "" limpa a descrição/imagem; na criação, omite.
+        // Na edição, "" limpa a descrição; na criação, omite.
         description: isEdit ? description : description || undefined,
         milestoneId,
-        imageUrl: isEdit ? imageUrl : imageUrl || undefined,
+        ...rewardImagePayload(image, isEdit),
       }),
     });
 
@@ -65,7 +62,7 @@ export function RewardForm({
     if (!isEdit) {
       setTitle("");
       setDescription("");
-      setImageUrl("");
+      setImage({ kind: "none" });
     }
   }
 
@@ -125,24 +122,12 @@ export function RewardForm({
         </select>
       </div>
 
-      <div>
-        <label htmlFor={`${idPrefix}imageUrl`} className="mb-1.5 block text-sm font-medium text-ink">
-          Imagem <span className="text-ink-muted">(opcional)</span>
-        </label>
-        <select
-          id={`${idPrefix}imageUrl`}
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          className={inputClass}
-        >
-          <option value="">Sem imagem (presente genérico)</option>
-          {REWARD_IMAGES.map((img) => (
-            <option key={img.value} value={img.value}>
-              {img.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <RewardImageField
+        id={`${idPrefix}image`}
+        value={image}
+        onChange={setImage}
+        onUploadingChange={setUploading}
+      />
 
       {status === "error" && (
         <p className="text-sm text-pastel-red-text">
@@ -154,7 +139,7 @@ export function RewardForm({
 
       {isEdit ? (
         <div className="flex gap-2">
-          <Button type="submit" disabled={status === "sending" || !milestoneId}>
+          <Button type="submit" disabled={status === "sending" || uploading || !milestoneId}>
             {status === "sending" ? "Salvando..." : "Salvar"}
           </Button>
           <button
@@ -167,7 +152,7 @@ export function RewardForm({
           </button>
         </div>
       ) : (
-        <Button type="submit" disabled={status === "sending" || !milestoneId}>
+        <Button type="submit" disabled={status === "sending" || uploading || !milestoneId}>
           {status === "sending" ? "Criando..." : "Criar reward"}
         </Button>
       )}
