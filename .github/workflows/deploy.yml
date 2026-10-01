@@ -58,6 +58,7 @@ jobs:
           docker build \
             --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            --build-arg NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN="${{ vars.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN || 'true' }}" \
             -t "$REGISTRY/$ECR_REPOSITORY:latest" -t "$REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" .
           docker push "$REGISTRY/$ECR_REPOSITORY:latest"
           docker push "$REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
