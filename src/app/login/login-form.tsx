@@ -5,6 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
+// Login con Google oculto (no eliminado) — se reactiva con
+// NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true, sin tocar código.
+const GOOGLE_LOGIN_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN === "true";
+
 // El login ADM (/admin/login) reusa este mismo form: solo cambian los
 // textos y a dónde vuelve el usuario después del link.
 const COPY = {
@@ -117,28 +122,32 @@ export function LoginForm({
         {status === "sending" ? "Enviando..." : copy.submit}
       </button>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-ink-muted">ou</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      {GOOGLE_LOGIN_ENABLED && (
+        <>
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-ink-muted">ou</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
 
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={googleStatus === "redirecting"}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <GoogleIcon />
-        {googleStatus === "redirecting"
-          ? "Redirecionando..."
-          : "Continuar com Google"}
-      </button>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleStatus === "redirecting"}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <GoogleIcon />
+            {googleStatus === "redirecting"
+              ? "Redirecionando..."
+              : "Continuar com Google"}
+          </button>
 
-      {googleStatus === "error" && (
-        <p className="text-sm text-pastel-red-text">
-          Não foi possível iniciar o login com Google. Tente novamente.
-        </p>
+          {googleStatus === "error" && (
+            <p className="text-sm text-pastel-red-text">
+              Não foi possível iniciar o login com Google. Tente novamente.
+            </p>
+          )}
+        </>
       )}
 
       <p className="flex items-start gap-2.5 text-xs text-ink-muted">
