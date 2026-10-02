@@ -18,10 +18,10 @@ ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
-# Botón "Continuar com Google" (ver src/app/login/login-form.tsx). Visible
-# por defecto para pruebas; para ocultarlo, definir la variable en "false"
-# (Railway la pasa como build arg; en AWS, la variable de GitHub Actions).
-ARG NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true
+# Botón "Continuar com Google" (ver src/app/login/login-form.tsx). Oculto
+# por defecto; para mostrarlo, definir la variable en "true" (Railway la
+# pasa como build arg; en AWS, la variable de GitHub Actions).
+ARG NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=false
 ENV NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=$NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN
 
 RUN npm run build
