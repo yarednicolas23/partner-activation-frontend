@@ -39,9 +39,8 @@ export function JourneyMap({ milestones }: { milestones: MilestoneView[] }) {
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight text-ink">Sua jornada</h2>
-      </div>
+      {/* Oculto visualmente (diseño), se mantiene para lectores de pantalla. */}
+      <h2 className="sr-only">Sua jornada</h2>
 
       <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-0 sm:overflow-visible sm:px-0">
         <div className="relative min-w-[640px] sm:min-w-0 [--stage-w:120px] sm:[--stage-w:180px] lg:[--stage-w:224px]">
