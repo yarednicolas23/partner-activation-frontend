@@ -1,13 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import type { PartnerProfile } from "@/lib/types";
 import { ProfileMenu } from "./profile-menu";
 
-export function Navbar({ profile }: { profile: PartnerProfile | null }) {
-  const isAdmin = profile?.role === "admin";
+export function Navbar({
+  profile,
+  role,
+}: {
+  profile: PartnerProfile | null;
+  // Para as telas de carregamento (loading.tsx), que ainda não têm o perfil
+  // mas sabem a área: mostra os links certos e um avatar placeholder.
+  role?: PartnerProfile["role"];
+}) {
+  const isAdmin = (profile?.role ?? role) === "admin";
   const pathname = usePathname();
 
   return (
@@ -60,7 +68,14 @@ export function Navbar({ profile }: { profile: PartnerProfile | null }) {
             <BellIcon />
           </button>
 
-          <ProfileMenu profile={profile} isAdmin={isAdmin} />
+          {profile || !role ? (
+            <ProfileMenu profile={profile} isAdmin={isAdmin} />
+          ) : (
+            <span className="flex items-center gap-2.5 border-l border-border py-1 pl-3 pr-2" aria-hidden="true">
+              <span className="h-8 w-8 animate-pulse rounded-full bg-canvas" />
+              <span className="hidden h-3 w-20 animate-pulse rounded bg-canvas sm:block" />
+            </span>
+          )}
         </div>
       </div>
     </header>
@@ -89,7 +104,22 @@ function NavLink({
     >
       {icon?.(!!active)}
       {children}
+      <PendingIndicator />
     </Link>
+  );
+}
+
+// Spinner no link clicado enquanto a navegação não termina — feedback de
+// que a página está carregando (e evita cliques repetidos).
+function PendingIndicator() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      role="status"
+      aria-label="Carregando"
+      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand border-t-transparent"
+    />
   );
 }
 
