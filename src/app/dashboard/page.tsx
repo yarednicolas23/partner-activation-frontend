@@ -37,6 +37,12 @@ export default async function DashboardPage() {
   }
 
   const profile = await getProfile(session.access_token);
+  // Admin nunca usa o painel do parceiro — cobre qualquer caminho que caia
+  // aqui (link de login sem `next`, Google, URL digitada).
+  if (profile?.role === "admin") {
+    redirect("/admin/dashboard");
+  }
+
   const isPartner = profile?.role === "partner";
   const milestones: MilestoneView[] = isPartner
     ? await getMilestones(session.access_token)
