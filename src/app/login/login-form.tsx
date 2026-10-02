@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Status = "idle" | "sending" | "sent" | "error";
+type Status = "idle" | "sending" | "sent" | "error" | "throttled";
 
 // Login con Google oculto (no eliminado) — se reactiva con
 // NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true, sin tocar código.
@@ -44,22 +44,22 @@ export function LoginForm({
     "idle" | "redirecting" | "error"
   >("idle");
 
+  // O magic link é gerado e enviado pelo backend (plantilla da plataforma
+  // via Resend), não pelo signInWithOtp/template do Supabase. Só usuários
+  // pré-registrados recebem o e-mail; a resposta é igual para qualquer
+  // e-mail para não revelar quais existem.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectTo(),
-        // Solo usuarios pre-registrados (invitados por Kaspersky) pueden
-        // entrar — sin esto, cualquier email crearía una cuenta nueva.
-        shouldCreateUser: false,
-      },
+    const res = await fetch("/api/auth/login-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, next: copy.next }),
     });
 
-    setStatus(error ? "error" : "sent");
+    if (res.ok) setStatus("sent");
+    else setStatus(res.status === 429 ? "throttled" : "error");
   }
 
   async function handleGoogleSignIn() {
@@ -79,8 +79,8 @@ export function LoginForm({
   if (status === "sent") {
     return (
       <div className="rounded-lg border border-border bg-pastel-green-bg px-4 py-3 text-sm text-pastel-green-text">
-        Enviamos um link de acesso para <strong>{email}</strong>. Abra seu
-        e-mail para continuar.
+        Se <strong>{email}</strong> estiver cadastrado, você receberá um link
+        de acesso em instantes. Abra seu e-mail para continuar.
       </div>
     );
   }
@@ -107,6 +107,12 @@ export function LoginForm({
           />
         </div>
       </div>
+
+      {status === "throttled" && (
+        <p className="text-sm text-pastel-red-text">
+          Você acabou de pedir um link. Aguarde um minuto e tente novamente.
+        </p>
+      )}
 
       {status === "error" && (
         <p className="text-sm text-pastel-red-text">
