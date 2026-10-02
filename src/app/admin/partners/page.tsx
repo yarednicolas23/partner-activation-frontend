@@ -6,6 +6,8 @@ import { formatCep, shippingAddressFromProfile } from "@/lib/address";
 import { Navbar } from "@/components/navbar";
 import { PartnersExportButton } from "./export-button";
 import { ResendInviteButton } from "./resend-invite-button";
+import { RoleButton } from "./role-button";
+import { AddAdminButton } from "./add-admin-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -19,6 +21,16 @@ async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
 
 async function getPartners(accessToken: string): Promise<PartnerProfile[]> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function getAdmins(accessToken: string): Promise<PartnerProfile[]> {
+  const res = await fetch(`${process.env.BACKEND_URL}/partners/admins`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: "no-store",
   });
@@ -43,7 +55,10 @@ export default async function AdminPartnersListPage() {
     redirect("/dashboard");
   }
 
-  const partners = await getPartners(session.access_token);
+  const [partners, admins] = await Promise.all([
+    getPartners(session.access_token),
+    getAdmins(session.access_token),
+  ]);
 
   return (
     <>
@@ -120,6 +135,42 @@ export default async function AdminPartnersListPage() {
             </table>
           </div>
         )}
+
+        <section className="mt-12">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="mb-1 text-lg font-semibold tracking-tight text-ink">
+                Administradores
+              </h2>
+              <p className="text-sm text-ink-muted">
+                {admins.length} com acesso ao painel admin.
+              </p>
+            </div>
+            <AddAdminButton partners={partners} />
+          </div>
+          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {admins.map((admin) => (
+                  <tr key={admin.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 text-ink">
+                      <Link
+                        href={`/admin/partners/${admin.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {admin.full_name ?? "—"}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-ink">{admin.email}</td>
+                    <td className="px-4 py-3 text-right">
+                      <RoleButton user={admin} isSelf={admin.id === profile.id} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </>
   );

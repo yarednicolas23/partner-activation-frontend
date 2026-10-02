@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { EvidenceQueueItem, PartnerProfile } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { EvidenceHistory } from "./evidence-history";
+import { RoleButton } from "../role-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -100,6 +101,18 @@ export default async function AdminPartnerDetailPage({
               </dd>
             </div>
           </dl>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <div>
+              <p className="text-sm font-medium text-ink">Acesso</p>
+              <p className="text-xs text-ink-muted">
+                {partner.role === "admin"
+                  ? "Administrador — acessa o painel admin."
+                  : "Parceiro — acessa a jornada do parceiro."}
+              </p>
+            </div>
+            <RoleButton user={partner} isSelf={partner.id === profile.id} />
+          </div>
         </div>
 
         <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
