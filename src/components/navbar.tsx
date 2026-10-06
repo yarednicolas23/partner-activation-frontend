@@ -20,8 +20,11 @@ export function Navbar({
 
   return (
     <>
-      <header className="sticky top-[22px] z-40 mx-auto mt-[22px] w-[calc(100%-48px)] max-w-[1800px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:w-[calc(100%-96px)]">
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8 sm:py-5">
+      {/* Mobile (< md): sin card — barra a todo el ancho sobre el fondo gris
+          (bg-canvas para tapar el contenido al hacer scroll). Desde md: card
+          blanca flotante del diseño desktop. */}
+      <header className="sticky top-0 z-40 mx-auto w-full bg-canvas md:top-[22px] md:mt-[22px] md:w-[calc(100%-96px)] md:max-w-[1800px] md:rounded-[17px] md:bg-surface md:shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-12 md:px-8 md:py-5">
           <Link
             href={isAdmin ? "/admin/dashboard" : "/dashboard"}
             className="flex items-center"
