@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { MilestoneView } from "@/lib/types";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "./stage-art";
+import { StatSlider } from "./stat-slider";
 
 // Mesma regra confirmada de 1 ano por parceiro usada no ProgressSummary —
 // não há campo de deadline no backend ainda, então derivamos daqui também.
@@ -54,37 +55,52 @@ export function ProgressFooter({
   const currentProgress = current ? stageTaskProgress(current) : null;
   const remaining = currentProgress ? currentProgress.total - currentProgress.completed : 0;
 
+  const stats = [
+    <Stat
+      key="time"
+      icon="/clock.svg"
+      label="Tempo restante para concluir o programa"
+      value={timeRemainingLabel(deadline)}
+      valueClassName="text-brand"
+    />,
+    <Stat
+      key="current"
+      icon="/safari.svg"
+      label="Etapa atual"
+      value={allDone ? "Programa concluído" : (current?.title ?? "—")}
+      sub={
+        !allDone && current && currentProgress
+          ? `${currentProgress.completed} de ${currentProgress.total} missões concluídas`
+          : undefined
+      }
+    />,
+    <Stat
+      key="next"
+      icon="/next.svg"
+      label="Próxima etapa"
+      value={allDone ? "—" : next ? `Etapa ${next.order_index}` : "Última etapa"}
+      valueClassName="text-brand"
+      sub={
+        !allDone && next
+          ? `Falta${remaining === 1 ? "" : "m"} ${pluralize(remaining, "missão", "missões")} para desbloquear`
+          : undefined
+      }
+    />,
+  ];
+
   return (
-    <div className="mt-6 grid gap-6 rounded-[10px] bg-surface p-6 shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:grid-cols-3 sm:divide-x sm:divide-border">
-      <Stat
-        icon="/clock.svg"
-        label="Tempo restante para concluir o programa"
-        value={timeRemainingLabel(deadline)}
-        valueClassName="text-brand"
-      />
-      <Stat
-        className="sm:pl-6"
-        icon="/safari.svg"
-        label="Etapa atual"
-        value={allDone ? "Programa concluído" : (current?.title ?? "—")}
-        sub={
-          !allDone && current && currentProgress
-            ? `${currentProgress.completed} de ${currentProgress.total} missões concluídas`
-            : undefined
-        }
-      />
-      <Stat
-        className="sm:pl-6"
-        icon="/next.svg"
-        label="Próxima etapa"
-        value={allDone ? "—" : next ? `Etapa ${next.order_index}` : "Última etapa"}
-        valueClassName="text-brand"
-        sub={
-          !allDone && next
-            ? `Falta${remaining === 1 ? "" : "m"} ${pluralize(remaining, "missão", "missões")} para desbloquear`
-            : undefined
-        }
-      />
+    <div className="mt-6">
+      {/* Mobile (< md): un stat a la vez. Desktop: las tres columnas. */}
+      <div className="md:hidden">
+        <StatSlider slides={stats} />
+      </div>
+      <div className="hidden gap-6 rounded-[10px] bg-surface p-6 shadow-[0px_3px_6px_rgba(0,0,0,0.16)] md:grid md:grid-cols-3 md:divide-x md:divide-border">
+        {stats.map((stat, i) => (
+          <div key={stat.key} className={i > 0 ? "md:pl-6" : ""}>
+            {stat}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
