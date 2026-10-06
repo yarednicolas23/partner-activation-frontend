@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { MilestoneView, PartnerProfile } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
+import { JourneyCarousel } from "./journey-carousel";
 import { JourneyMap } from "./journey-map";
 import { ProgressFooter } from "./progress-footer";
 import { ProgressSummary } from "./progress-summary";
@@ -81,7 +82,13 @@ export default async function DashboardPage() {
 
         {isPartner && (
           <>
-            <JourneyMap milestones={milestones} />
+            {/* Mobile (< md): carrusel de cards. Desktop: mapa isométrico original. */}
+            <div className="md:hidden">
+              <JourneyCarousel milestones={milestones} />
+            </div>
+            <div className="hidden md:block">
+              <JourneyMap milestones={milestones} />
+            </div>
             <ProgressFooter milestones={milestones} registeredAt={profile.created_at} />
           </>
         )}
