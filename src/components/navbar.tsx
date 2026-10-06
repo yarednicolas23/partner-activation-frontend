@@ -19,66 +19,138 @@ export function Navbar({
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-[22px] z-40 mx-auto mt-[22px] w-[calc(100%-48px)] max-w-[1800px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:w-[calc(100%-96px)]">
-      <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8 sm:py-5">
-        <Link
-          href={isAdmin ? "/admin/dashboard" : "/dashboard"}
-          className="flex items-center"
-        >
-          {/* Logo horizontal armado con los trazos de logo-partnert-quest.svg
+    <>
+      <header className="sticky top-[22px] z-40 mx-auto mt-[22px] w-[calc(100%-48px)] max-w-[1800px] rounded-[17px] bg-surface shadow-[0px_3px_6px_rgba(0,0,0,0.16)] sm:w-[calc(100%-96px)]">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8 sm:py-5">
+          <Link
+            href={isAdmin ? "/admin/dashboard" : "/dashboard"}
+            className="flex items-center"
+          >
+            {/* Logo horizontal armado con los trazos de logo-partnert-quest.svg
               (tipografía Kaspersky Sans Display ya vectorizada) — no depende
               de cargar la fuente. */}
-          <Image
-            src="/logo-navbar.svg"
-            alt="Kaspersky Partner Quest"
-            width={319}
-            height={25}
-            priority
-            className="h-5 w-auto sm:h-6"
-          />
-        </Link>
+            <Image
+              src="/logo-navbar.svg"
+              alt="Kaspersky Partner Quest"
+              width={319}
+              height={25}
+              priority
+              className="h-5 w-auto sm:h-6"
+            />
+          </Link>
 
-        <nav className="flex items-center gap-2">
-          {isAdmin ? (
-            <>
-              <NavLink href="/admin/dashboard" active={pathname === "/admin/dashboard"}>Dashboard</NavLink>
-              <NavLink href="/admin/partners" active={pathname.startsWith("/admin/partners")}>Parceiros</NavLink>
-              <NavLink href="/admin/evidence" active={pathname === "/admin/evidence"}>Evidências</NavLink>
-              <NavLink href="/admin/rewards" active={pathname === "/admin/rewards"}>Recompensas</NavLink>
-            </>
-          ) : (
-            <>
-              <NavLink href="/dashboard" icon={(active) => <MapIcon active={active} />} active={pathname === "/dashboard"}>
-                Jornada
-              </NavLink>
-              <NavLink href="/dashboard/rewards" icon={(active) => <GiftIcon active={active} />} active={pathname === "/dashboard/rewards"}>
-                Recompensas
-              </NavLink>
-            </>
-          )}
-        </nav>
+          {/* Desktop: links no header. Mobile (< md): vão para a BottomNav. */}
+          <nav className="hidden items-center gap-2 md:flex">
+            <NavLinks isAdmin={isAdmin} pathname={pathname} />
+          </nav>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            title="Notificações"
-            aria-label="Notificações"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition hover:bg-canvas hover:text-ink"
-          >
-            <BellIcon />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              title="Notificações"
+              aria-label="Notificações"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition hover:bg-canvas hover:text-ink"
+            >
+              <BellIcon />
+            </button>
 
-          {profile || !role ? (
-            <ProfileMenu profile={profile} isAdmin={isAdmin} />
-          ) : (
-            <span className="flex items-center gap-2.5 border-l border-border py-1 pl-3 pr-2" aria-hidden="true">
-              <span className="h-8 w-8 animate-pulse rounded-full bg-canvas" />
-              <span className="hidden h-3 w-20 animate-pulse rounded bg-canvas sm:block" />
-            </span>
-          )}
+            {profile || !role ? (
+              <ProfileMenu profile={profile} isAdmin={isAdmin} />
+            ) : (
+              <span className="flex items-center gap-2.5 border-l border-border py-1 pl-3 pr-2" aria-hidden="true">
+                <span className="h-8 w-8 animate-pulse rounded-full bg-canvas" />
+                <span className="hidden h-3 w-20 animate-pulse rounded bg-canvas sm:block" />
+              </span>
+            )}
+          </div>
         </div>
+      </header>
+      <BottomNav isAdmin={isAdmin} pathname={pathname} />
+    </>
+  );
+}
+
+function NavLinks({
+  isAdmin,
+  pathname,
+  compact,
+}: {
+  isAdmin: boolean;
+  pathname: string;
+  compact?: boolean;
+}) {
+  return isAdmin ? (
+    <>
+      <NavLink
+        compact={compact}
+        href="/admin/dashboard"
+        active={pathname === "/admin/dashboard"}
+      >
+        Dashboard
+      </NavLink>
+      <NavLink
+        compact={compact}
+        href="/admin/partners"
+        active={pathname.startsWith("/admin/partners")}
+      >
+        Parceiros
+      </NavLink>
+      <NavLink
+        compact={compact}
+        href="/admin/evidence"
+        active={pathname === "/admin/evidence"}
+      >
+        Evidências
+      </NavLink>
+      <NavLink
+        compact={compact}
+        href="/admin/rewards"
+        active={pathname === "/admin/rewards"}
+      >
+        Recompensas
+      </NavLink>
+    </>
+  ) : (
+    <>
+      <NavLink
+        compact={compact}
+        href="/dashboard"
+        icon={(active) => <MapIcon active={active} />}
+        active={pathname === "/dashboard"}
+      >
+        Jornada
+      </NavLink>
+      <NavLink
+        compact={compact}
+        href="/dashboard/rewards"
+        icon={(active) => <GiftIcon active={active} />}
+        active={pathname === "/dashboard/rewards"}
+      >
+        Recompensas
+      </NavLink>
+    </>
+  );
+}
+
+// Diseño mobile: barra blanca fija abajo con los items repartidos a lo ancho.
+// El id lo usa globals.css (body:has(#bottom-nav)) para reservar su alto.
+function BottomNav({
+  isAdmin,
+  pathname,
+}: {
+  isAdmin: boolean;
+  pathname: string;
+}) {
+  return (
+    <nav
+      id="bottom-nav"
+      aria-label="Navegação principal"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-6 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] md:hidden"
+    >
+      <div className="mx-auto grid max-w-md auto-cols-fr grid-flow-col gap-2">
+        <NavLinks isAdmin={isAdmin} pathname={pathname} compact />
       </div>
-    </header>
+    </nav>
   );
 }
 
@@ -87,20 +159,25 @@ function NavLink({
   children,
   icon,
   active,
+  compact,
 }: {
   href: string;
   children: React.ReactNode;
   icon?: (active: boolean) => React.ReactNode;
   active?: boolean;
+  // Variante da BottomNav: mais baixa e centrada na célula.
+  compact?: boolean;
 }) {
   // Diseño XD: item activo con fondo #F1F5F8, radius 16px, 60px de alto.
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[60px] items-center gap-2.5 rounded-[16px] px-6 font-display text-base font-medium text-ink transition ${
-        active ? "bg-nav-pill" : "hover:bg-nav-pill"
-      }`}
+      className={`flex items-center gap-2.5 font-display font-medium text-ink transition ${
+        compact
+          ? "h-[50px] justify-center rounded-[12px] px-3 text-[15px]"
+          : "h-[60px] rounded-[16px] px-6 text-base"
+      } ${active ? "bg-nav-pill" : "hover:bg-nav-pill"}`}
     >
       {icon?.(!!active)}
       {children}

@@ -70,7 +70,7 @@ export function StageModal({
       {top !== null && (
         <div
           className="absolute inset-x-0 mx-auto flex w-[calc(100%-48px)] max-w-[1800px] flex-col gap-6 overflow-y-auto sm:w-[calc(100%-96px)] lg:flex-row lg:overflow-hidden"
-          style={{ top, bottom: GAP }}
+          style={{ top, bottom: `calc(${GAP}px + var(--bottom-nav-h, 0px))` }}
         >
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 py-4">
             <motion.div
