@@ -72,10 +72,13 @@ export function StageModal({
           className="absolute inset-x-0 mx-auto flex w-[calc(100%-48px)] max-w-[1800px] flex-col gap-6 overflow-y-auto sm:w-[calc(100%-96px)] lg:flex-row lg:overflow-hidden"
           style={{ top, bottom: `calc(${GAP}px + var(--bottom-nav-h, 0px))` }}
         >
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 py-4">
+          {/* Mobile: bloque a altura natural y alineado arriba — con
+              justify-center + min-h-0 el contenido desbordaba hacia arriba
+              y cortaba el edificio. Desde lg: centrado junto al panel. */}
+          <div className="flex shrink-0 flex-col items-center gap-6 py-4 lg:min-h-0 lg:flex-1 lg:shrink lg:justify-center">
             <motion.div
               key={`${milestone.id}-image`}
-              className="relative aspect-square w-full max-w-[36rem] shrink lg:min-h-0 lg:flex-1 lg:max-h-[36rem]"
+              className="relative aspect-square w-full max-w-[36rem] shrink-0 lg:min-h-0 lg:flex-1 lg:shrink lg:max-h-[36rem]"
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25 }}
