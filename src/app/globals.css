@@ -61,14 +61,20 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Bottom nav mobile (components/navbar.tsx): solo existe en páginas con
-   navbar y se oculta desde md. Reserva su alto para que no tape contenido;
-   --bottom-nav-h lo usan también los overlays fijos (StageModal). */
+/* Bottom nav (components/navbar.tsx): solo existe en páginas con navbar y
+   se oculta desde md (partner) o lg (admin, data-until="lg"). Reserva su alto
+   para que no tape contenido; --bottom-nav-h lo usan también los overlays
+   fijos (StageModal). */
 @media (width < 48rem) {
   :root:has(#bottom-nav) {
     --bottom-nav-h: calc(83px + env(safe-area-inset-bottom));
   }
-  body:has(#bottom-nav) {
-    padding-bottom: var(--bottom-nav-h);
+}
+@media (width < 64rem) {
+  :root:has(#bottom-nav[data-until="lg"]) {
+    --bottom-nav-h: calc(83px + env(safe-area-inset-bottom));
   }
+}
+body:has(#bottom-nav) {
+  padding-bottom: var(--bottom-nav-h, 0px);
 }

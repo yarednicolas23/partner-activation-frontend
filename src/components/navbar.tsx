@@ -24,10 +24,11 @@ export function Navbar({
           (bg-canvas para tapar el contenido al hacer scroll). Desde md: card
           blanca flotante del diseño desktop. */}
       <header className="sticky top-0 z-40 mx-auto w-full bg-canvas md:top-[22px] md:mt-[22px] md:w-[calc(100%-96px)] md:max-w-[1800px] md:rounded-[17px] md:bg-surface md:shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-12 md:px-8 md:py-5">
+        <div className="flex w-full items-center justify-between gap-3 px-6 py-4 sm:px-12 md:px-8 md:py-5">
           <Link
             href={isAdmin ? "/admin/dashboard" : "/dashboard"}
-            className="flex items-center"
+            // min-w-0 + w-full: o logo encolhe antes de quebrar a linha.
+            className="flex min-w-0 shrink items-center"
           >
             {/* Logo horizontal armado con los trazos de logo-partnert-quest.svg
               (tipografía Kaspersky Sans Display ya vectorizada) — no depende
@@ -38,16 +39,17 @@ export function Navbar({
               width={319}
               height={25}
               priority
-              className="h-5 w-auto sm:h-6"
+              className="h-auto w-full max-w-[255px] sm:max-w-[306px]"
             />
           </Link>
 
-          {/* Desktop: links no header. Mobile (< md): vão para a BottomNav. */}
-          <nav className="hidden items-center gap-2 md:flex">
+          {/* Links no header a partir de md (admin: lg, tem 4 links); abaixo
+              disso vão para a BottomNav. */}
+          <nav className={`hidden shrink-0 items-center gap-2 ${isAdmin ? "lg:flex" : "md:flex"}`}>
             <NavLinks isAdmin={isAdmin} pathname={pathname} />
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
               title="Notificações"
@@ -136,7 +138,8 @@ function NavLinks({
 }
 
 // Diseño mobile: barra blanca fija abajo con los items repartidos a lo ancho.
-// El id lo usa globals.css (body:has(#bottom-nav)) para reservar su alto.
+// El id/data-until lo usa globals.css (body:has(#bottom-nav)) para reservar
+// su alto mientras está visible.
 function BottomNav({
   isAdmin,
   pathname,
@@ -147,8 +150,9 @@ function BottomNav({
   return (
     <nav
       id="bottom-nav"
+      data-until={isAdmin ? "lg" : "md"}
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-6 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] md:hidden"
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-6 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] ${isAdmin ? "lg:hidden" : "md:hidden"}`}
     >
       <div className="mx-auto grid max-w-md auto-cols-fr grid-flow-col gap-2">
         <NavLinks isAdmin={isAdmin} pathname={pathname} compact />
@@ -179,7 +183,7 @@ function NavLink({
       className={`flex items-center gap-2.5 font-display font-medium text-ink transition ${
         compact
           ? "h-[50px] justify-center rounded-[12px] px-3 text-[15px]"
-          : "h-[60px] rounded-[16px] px-6 text-base"
+          : "h-[60px] whitespace-nowrap rounded-[16px] px-4 text-base xl:px-6"
       } ${active ? "bg-nav-pill" : "hover:bg-nav-pill"}`}
     >
       {icon?.(!!active)}
