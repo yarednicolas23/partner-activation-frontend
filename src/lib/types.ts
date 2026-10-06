@@ -30,7 +30,16 @@ export interface ShippingAddress {
 }
 
 // Espejo de backend/src/milestones/milestone.interfaces.ts
-export type EvidenceType = "text" | "file" | "none";
+export type EvidenceType = "none" | "text" | "email" | "url" | "file" | "choice";
+export type EvidenceInputType = "text" | "email" | "url" | "file";
+
+// Opção de uma missão "choice" (ex.: canal de divulgação, ação de demanda).
+export interface EvidenceOption {
+  key: string;
+  label: string;
+  evidence_type: EvidenceInputType;
+  evidence_label: string;
+}
 export type EvidenceStatus = "pending" | "approved" | "rejected";
 
 export interface MilestoneTask {
@@ -40,6 +49,9 @@ export interface MilestoneTask {
   title: string;
   description: string | null;
   evidence_type: EvidenceType;
+  // Texto de "Comprovação exigida".
+  evidence_label: string | null;
+  evidence_options: EvidenceOption[] | null;
 }
 
 export interface TaskEvidence {
@@ -48,6 +60,7 @@ export interface TaskEvidence {
   partner_id: string;
   text_value: string | null;
   file_path: string | null;
+  option_key: string | null;
   status: EvidenceStatus;
   review_note: string | null;
   reviewed_by: string | null;
@@ -136,4 +149,10 @@ export interface AdminStats {
   avgTimeToFirstSaleDays: number | null;
   partnersRegisteredByWeek: WeeklyCount[];
   partnersByMilestone: MilestoneDistributionEntry[];
+}
+
+// Rótulo da opção escolhida numa missão "choice" (null fora delas).
+export function evidenceOptionLabel(task: MilestoneTask, optionKey: string | null): string | null {
+  if (!optionKey) return null;
+  return task.evidence_options?.find((o) => o.key === optionKey)?.label ?? optionKey;
 }

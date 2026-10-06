@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { EvidenceType, TaskWithEvidence } from "@/lib/types";
+import type { EvidenceInputType, TaskWithEvidence } from "@/lib/types";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Em análise",
@@ -15,25 +15,16 @@ const STATUS_TEXT_CLASS: Record<string, string> = {
   rejected: "text-pastel-red-text",
 };
 
-// Não temos campos de "como completar"/"verificação" por tarefa no backend
-// (só title/description/evidence_type) — o texto abaixo é genérico por tipo,
-// não um dado inventado por tarefa específica.
-function howToComplete(evidenceType: EvidenceType): string {
-  if (evidenceType === "none") {
-    return "Nenhuma ação é necessária. Esta missão é concluída automaticamente pelo sistema.";
-  }
-  if (evidenceType === "file") {
-    return "Envie o arquivo solicitado (PDF, JPG ou PNG) no campo ao lado.";
-  }
-  return "Envie o link, e-mail ou número solicitado no campo ao lado.";
-}
+const AUTO_NOTE =
+  "Nenhuma ação é necessária. Esta missão é concluída automaticamente pelo sistema.";
 
-function verificationNote(evidenceType: EvidenceType): string {
-  if (evidenceType === "none") {
-    return "Nenhuma comprovação é necessária — a conclusão é registrada automaticamente pelo sistema.";
-  }
-  return "Revisado manualmente pela equipe Kaspersky.";
-}
+// Placeholder do campo conforme o tipo de comprovação (documento de conteúdo
+// das telas — ex.: "voce@suaempresa.com.br", "https://...").
+const TEXT_INPUT: Record<Exclude<EvidenceInputType, "file">, { type: string; placeholder: string }> = {
+  email: { type: "email", placeholder: "voce@suaempresa.com.br" },
+  url: { type: "url", placeholder: "https://..." },
+  text: { type: "text", placeholder: "Digite o número" },
+};
 
 const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -50,6 +41,9 @@ export function TaskAccordionRow({
   const [open, setOpen] = useState(defaultOpen);
   const [evidence, setEvidence] = useState(task.evidence);
   const [textValue, setTextValue] = useState("");
+  // Missões "choice": a opção escolhida define o tipo de comprovação.
+  const [optionKey, setOptionKey] = useState<string | null>(task.evidence?.option_key ?? null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
   const [dragging, setDragging] = useState(false);
@@ -71,6 +65,17 @@ export function TaskAccordionRow({
   }
 
   const isAuto = task.evidence_type === "none";
+  const isChoice = task.evidence_type === "choice";
+  const selectedOption = isChoice
+    ? (task.evidence_options?.find((o) => o.key === optionKey) ?? null)
+    : null;
+  // null = missão "choice" sem opção escolhida ainda.
+  const inputType: EvidenceInputType | null = isAuto
+    ? null
+    : isChoice
+      ? (selectedOption?.evidence_type ?? null)
+      : (task.evidence_type as EvidenceInputType);
+  const evidenceLabel = selectedOption?.evidence_label ?? task.evidence_label;
   const isDone = isAuto || evidence?.status === "approved";
   const statusLabel = isAuto ? "Concluída" : evidence ? STATUS_LABEL[evidence.status] : "Disponível";
   const statusClass = isAuto ? "text-brand" : evidence ? STATUS_TEXT_CLASS[evidence.status] : "text-ink";
@@ -78,8 +83,10 @@ export function TaskAccordionRow({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
+    setErrorMessage(null);
+    const choice = isChoice ? { optionKey } : {};
 
-    if (task.evidence_type === "file") {
+    if (inputType === "file") {
       if (!file) {
         setStatus("error");
         return;
@@ -92,12 +99,12 @@ export function TaskAccordionRow({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contentType: file.type }),
+          body: JSON.stringify({ contentType: file.type, ...choice }),
         },
       );
 
       if (!uploadUrlRes.ok) {
-        setStatus("error");
+        await failWith(uploadUrlRes);
         return;
       }
 
@@ -122,11 +129,11 @@ export function TaskAccordionRow({
       const res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filePath }),
+        body: JSON.stringify({ filePath, ...choice }),
       });
 
       if (!res.ok) {
-        setStatus("error");
+        await failWith(res);
         return;
       }
 
@@ -139,17 +146,27 @@ export function TaskAccordionRow({
     const res = await fetch(`/api/milestones/tasks/${task.id}/evidence`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ textValue }),
+      body: JSON.stringify({ textValue, ...choice }),
     });
 
     if (!res.ok) {
-      setStatus("error");
+      await failWith(res);
       return;
     }
 
     setEvidence(await res.json());
     setStatus("idle");
     setTextValue("");
+  }
+
+  // Erros 400 do backend trazem a mensagem para o parceiro (ex.: "Digite um
+  // e-mail válido."); qualquer outro erro cai no texto genérico.
+  async function failWith(res: Response) {
+    if (res.status === 400) {
+      const body = (await res.json().catch(() => null)) as { message?: unknown } | null;
+      if (typeof body?.message === "string") setErrorMessage(body.message);
+    }
+    setStatus("error");
   }
 
   return (
@@ -193,12 +210,16 @@ export function TaskAccordionRow({
             <div className="space-y-5 text-[15px] leading-snug">
               {task.description && <p className="text-ink-muted">{task.description}</p>}
               <div>
-                <p className="font-medium text-ink">Como concluir</p>
-                <p className="text-ink-muted">{howToComplete(task.evidence_type)}</p>
+                <p className="font-medium text-ink">Comprovação exigida</p>
+                <p className="text-ink-muted">{isAuto ? AUTO_NOTE : evidenceLabel}</p>
               </div>
               <div>
                 <p className="font-medium text-ink">Verificação</p>
-                <p className="text-ink-muted">{verificationNote(task.evidence_type)}</p>
+                <p className="text-ink-muted">
+                  {isAuto
+                    ? "A conclusão é registrada automaticamente pelo sistema."
+                    : "Revisado manualmente pela equipe Kaspersky."}
+                </p>
               </div>
             </div>
           </div>
@@ -217,16 +238,52 @@ export function TaskAccordionRow({
 
               {(!evidence || evidence.status === "rejected") && (
                 <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-                  {task.evidence_type === "text" ? (
+                  {isChoice && (
+                    <fieldset className="w-full">
+                      <legend className="mb-2 text-sm font-medium text-ink">Escolha uma opção</legend>
+                      <div className="flex flex-col gap-2">
+                        {task.evidence_options?.map((option) => (
+                          <label
+                            key={option.key}
+                            className={`flex cursor-pointer items-center gap-3 rounded-[10px] border px-4 py-2.5 text-sm transition ${
+                              option.key === optionKey
+                                ? "border-brand bg-brand-soft text-ink"
+                                : "border-border bg-surface text-ink hover:border-brand"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`option-${task.id}`}
+                              value={option.key}
+                              checked={option.key === optionKey}
+                              onChange={() => {
+                                setOptionKey(option.key);
+                                setFile(null);
+                                setFileError(null);
+                                setTextValue("");
+                              }}
+                              className="accent-[var(--color-brand)]"
+                            />
+                            {option.label}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+
+                  {inputType && inputType !== "file" && (
                     <input
-                      type="text"
+                      type={TEXT_INPUT[inputType].type}
                       required
                       value={textValue}
                       onChange={(e) => setTextValue(e.target.value)}
-                      placeholder="Link, e-mail ou número"
+                      placeholder={TEXT_INPUT[inputType].placeholder}
+                      aria-label={evidenceLabel ?? "Comprovação"}
                       className="w-full rounded-[10px] border border-border bg-surface px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand focus:ring-1 focus:ring-brand"
                     />
-                  ) : (
+                  )}
+
+                  {inputType === "file" && (
                     <label
                       htmlFor={`file-${task.id}`}
                       onDragOver={(e) => {
@@ -273,7 +330,7 @@ export function TaskAccordionRow({
 
                   <button
                     type="submit"
-                    disabled={status === "sending" || (task.evidence_type === "file" && !file)}
+                    disabled={status === "sending" || !inputType || (inputType === "file" && !file)}
                     className="flex h-[52px] w-full max-w-[17rem] items-center justify-center gap-6 rounded-[10px] border-2 border-brand bg-surface text-base font-medium text-brand transition hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {status === "sending" ? "Enviando..." : "Enviar comprovação"}
@@ -284,7 +341,7 @@ export function TaskAccordionRow({
 
               {status === "error" && (
                 <p className="text-xs text-pastel-red-text">
-                  Não foi possível enviar. Tente novamente.
+                  {errorMessage ?? "Não foi possível enviar. Tente novamente."}
                 </p>
               )}
             </div>

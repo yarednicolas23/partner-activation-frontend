@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EvidenceQueueItem } from "@/lib/types";
+import { evidenceOptionLabel, type EvidenceQueueItem } from "@/lib/types";
 
 export function EvidenceQueue({ initialItems }: { initialItems: EvidenceQueueItem[] }) {
   const [items, setItems] = useState(initialItems);
@@ -124,6 +124,12 @@ function EvidenceCard({
     window.open(url, "_blank");
   }
 
+  // Para o validador comparar o que foi enviado com o que a missão exige.
+  const optionLabel = evidenceOptionLabel(item.task, item.option_key);
+  const requiredLabel =
+    item.task.evidence_options?.find((o) => o.key === item.option_key)?.evidence_label ??
+    item.task.evidence_label;
+
   return (
     <div className="rounded-lg border border-border bg-surface p-6">
       <div className="mb-3 flex items-start justify-between gap-4">
@@ -141,6 +147,15 @@ function EvidenceCard({
           Pendente
         </span>
       </div>
+
+      {optionLabel && (
+        <p className="mb-1 text-sm text-ink">
+          <span className="text-ink-muted">Opção escolhida:</span> {optionLabel}
+        </p>
+      )}
+      {requiredLabel && (
+        <p className="mb-3 text-xs text-ink-muted">Comprovação exigida: {requiredLabel}</p>
+      )}
 
       {item.text_value && (
         <p className="mb-3 rounded-md bg-brand-soft px-3 py-2 text-sm text-ink">

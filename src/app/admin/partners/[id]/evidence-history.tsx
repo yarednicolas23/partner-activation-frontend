@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EvidenceQueueItem } from "@/lib/types";
+import { evidenceOptionLabel, type EvidenceQueueItem } from "@/lib/types";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Em análise",
@@ -60,6 +60,13 @@ function EvidenceRow({ item }: { item: EvidenceQueueItem }) {
           {STATUS_LABEL[item.status]}
         </span>
       </div>
+
+      {evidenceOptionLabel(item.task, item.option_key) && (
+        <p className="mb-3 text-sm text-ink">
+          <span className="text-ink-muted">Opção escolhida:</span>{" "}
+          {evidenceOptionLabel(item.task, item.option_key)}
+        </p>
+      )}
 
       {item.text_value && (
         <p className="mb-3 rounded-md bg-brand-soft px-3 py-2 text-sm text-ink">
