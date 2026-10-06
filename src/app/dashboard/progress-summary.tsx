@@ -30,17 +30,21 @@ export function ProgressSummary({
   const deadline = addYears(registeredAt, 1);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:w-[560px] lg:shrink-0">
-      <div className="rounded-[10px] bg-surface p-5 shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
-        <p className="text-sm text-ink-muted">Progresso geral</p>
-        <p className="mt-1 text-3xl font-bold tracking-tight text-brand">{percent}%</p>
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
+    <div className="grid gap-4 md:grid-cols-2 lg:w-[560px] lg:shrink-0">
+      {/* Mobile (< md): sin card, sobre el fondo gris — label y % en la misma
+          línea, sin fechas. Desde md: card blanca original. */}
+      <div className="md:rounded-[10px] md:bg-surface md:p-5 md:shadow-[0px_3px_6px_rgba(0,0,0,0.16)]">
+        <div className="flex items-center justify-between md:block">
+          <p className="text-sm text-ink-muted">Progresso geral</p>
+          <p className="text-3xl font-bold tracking-tight text-brand md:mt-1">{percent}%</p>
+        </div>
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-nav-pill md:bg-border">
           <div
             className="h-full rounded-full bg-brand transition-[width] duration-700 ease-out"
             style={{ width: `${percent}%` }}
           />
         </div>
-        <dl className="mt-4 flex items-center gap-4 text-xs text-ink-muted">
+        <dl className="mt-4 hidden items-center gap-4 text-xs text-ink-muted md:flex">
           <div className="flex items-center gap-1.5">
             <CalendarIcon />
             <span>
