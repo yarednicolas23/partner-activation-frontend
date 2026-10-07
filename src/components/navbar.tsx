@@ -6,6 +6,10 @@ import { usePathname } from "next/navigation";
 import type { PartnerProfile } from "@/lib/types";
 import { ProfileMenu } from "./profile-menu";
 
+// La campana todavía no tiene funcionalidad: oculta hasta que existan las
+// notificaciones dentro de la plataforma.
+const SHOW_NOTIFICATIONS = false;
+
 export function Navbar({
   profile,
   role,
@@ -50,14 +54,16 @@ export function Navbar({
           </nav>
 
           <div className="flex shrink-0 items-center gap-3">
-            <button
-              type="button"
-              title="Notificações"
-              aria-label="Notificações"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition hover:bg-canvas hover:text-ink"
-            >
-              <BellIcon />
-            </button>
+            {SHOW_NOTIFICATIONS && (
+              <button
+                type="button"
+                title="Notificações"
+                aria-label="Notificações"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition hover:bg-canvas hover:text-ink"
+              >
+                <BellIcon />
+              </button>
+            )}
 
             {profile || !role ? (
               <ProfileMenu profile={profile} isAdmin={isAdmin} />
