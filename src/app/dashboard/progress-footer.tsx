@@ -2,14 +2,7 @@ import Image from "next/image";
 import type { MilestoneView } from "@/lib/types";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "./stage-art";
 import { StatSlider } from "./stat-slider";
-
-// Mesma regra confirmada de 1 ano por parceiro usada no ProgressSummary —
-// não há campo de deadline no backend ainda, então derivamos daqui também.
-function addYears(iso: string, years: number): string {
-  const d = new Date(iso);
-  d.setFullYear(d.getFullYear() + years);
-  return d.toISOString();
-}
+import { programDeadline } from "./program-deadline";
 
 function pluralize(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
@@ -46,7 +39,7 @@ export function ProgressFooter({
 }) {
   if (milestones.length === 0) return null;
 
-  const deadline = addYears(registeredAt, 1);
+  const deadline = programDeadline(registeredAt);
   const allDone = milestones.every(isMilestoneComplete);
   const current = findCurrentMilestone(milestones);
   const next = current
