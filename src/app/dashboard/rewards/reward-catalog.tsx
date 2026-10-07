@@ -186,7 +186,11 @@ export function RewardCatalog({
                 hasAddress={address !== null}
                 addressConfirmed={addressConfirmed}
                 onRedeemed={(redemption) =>
-                  setRedemptions((current) => [redemption, ...current])
+                  // Pedir de novo uma rejeitada reabre a mesma solicitação.
+                  setRedemptions((current) => [
+                    redemption,
+                    ...current.filter((r) => r.reward_id !== redemption.reward_id),
+                  ])
                 }
               />
             ))}
@@ -302,6 +306,8 @@ function RewardCard({
 
   const shipping = needsShipping(reward);
   const blockedByAddress = shipping && (!hasAddress || !addressConfirmed);
+  // Uma solicitação rejeitada pode ser feita de novo.
+  const canRequest = status === "available" || status === "rejected";
 
   async function handleRedeem() {
     setSending(true);
@@ -407,19 +413,23 @@ function RewardCard({
               {boxSubline && <p className={`mt-0.5 text-xs ${meta!.boxText}`}>{boxSubline}</p>}
             </div>
 
-            {status === "available" && (
+            {canRequest && (
               <button
                 type="button"
                 onClick={handleRedeem}
                 disabled={sending || blockedByAddress}
                 className="flex w-full items-center justify-center gap-1 rounded-full bg-brand px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {sending ? "Enviando..." : "Resgatar recompensa"}
+                {sending
+                  ? "Enviando..."
+                  : status === "rejected"
+                    ? "Solicitar novamente"
+                    : "Resgatar recompensa"}
                 {!sending && <ChevronRightIcon />}
               </button>
             )}
 
-            {status === "available" && shipping && !hasAddress && (
+            {canRequest && shipping && !hasAddress && (
               <p className="text-xs text-ink-muted">
                 <Link href={PROFILE_ADDRESS_HREF} className="font-semibold text-brand underline">
                   Cadastre seu endereço
@@ -428,11 +438,11 @@ function RewardCard({
               </p>
             )}
 
-            {status === "available" && shipping && hasAddress && !addressConfirmed && (
+            {canRequest && shipping && hasAddress && !addressConfirmed && (
               <p className="text-xs text-ink-muted">Confirme o endereço de entrega acima para resgatar.</p>
             )}
 
-            {status === "available" && error && (
+            {canRequest && error && (
               <p className="text-xs text-pastel-red-text">Não foi possível enviar. Tente novamente.</p>
             )}
 
