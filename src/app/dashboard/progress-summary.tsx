@@ -2,19 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import type { MilestoneView } from "@/lib/types";
 import { isMilestoneComplete } from "./stage-art";
+import { programDeadline } from "./program-deadline";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-
-// Prazo confirmado do programa: 1 ano por parceiro a partir do registro
-// (ver CLAUDE.md — Timeline). Não há campo de deadline no backend ainda,
-// então derivamos da data de criação do perfil em vez de inventar um valor.
-function addYears(iso: string, years: number): string {
-  const d = new Date(iso);
-  d.setFullYear(d.getFullYear() + years);
-  return d.toISOString();
 }
 
 export function ProgressSummary({
@@ -27,7 +19,7 @@ export function ProgressSummary({
   const total = milestones.length;
   const completed = milestones.filter(isMilestoneComplete).length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const deadline = addYears(registeredAt, 1);
+  const deadline = programDeadline(registeredAt);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:w-[560px] lg:shrink-0">
