@@ -156,3 +156,25 @@ export function evidenceOptionLabel(task: MilestoneTask, optionKey: string | nul
   if (!optionKey) return null;
   return task.evidence_options?.find((o) => o.key === optionKey)?.label ?? optionKey;
 }
+
+export type StageHistoryStatus = "locked" | "not_started" | "in_progress" | "completed";
+
+/** Histórico por etapa de um parceiro (admin) — GET /milestones/admin/partners/:id/stages. */
+export interface StageHistory {
+  id: string;
+  order_index: number;
+  title: string;
+  status: StageHistoryStatus;
+  started_at: string | null;
+  completed_at: string | null;
+  tasks: {
+    id: string;
+    order_index: number;
+    title: string;
+    evidence_type: EvidenceType;
+    evidence: Pick<
+      TaskEvidence,
+      "id" | "status" | "submitted_at" | "reviewed_at" | "review_note"
+    > | null;
+  }[];
+}

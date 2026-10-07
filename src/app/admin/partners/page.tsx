@@ -8,6 +8,7 @@ import { PartnersExportButton } from "./export-button";
 import { ResendInviteButton } from "./resend-invite-button";
 import { RoleButton } from "./role-button";
 import { AddAdminButton } from "./add-admin-button";
+import { DeletePartnerButton } from "./delete-partner-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -127,7 +128,12 @@ export default async function AdminPartnersListPage() {
                       {new Date(partner.created_at).toLocaleDateString("pt-BR")}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <ResendInviteButton partnerId={partner.id} />
+                      <div className="flex flex-col items-end gap-2">
+                        <ResendInviteButton partnerId={partner.id} />
+                        {partner.role !== "admin" && partner.id !== profile.id && (
+                          <DeletePartnerButton partner={partner} />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

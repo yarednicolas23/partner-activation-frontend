@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { EvidenceQueueItem, PartnerProfile } from "@/lib/types";
+import type { EvidenceQueueItem, PartnerProfile, StageHistory } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { EvidenceHistory } from "./evidence-history";
+import { StageHistoryList } from "./stage-history";
 import { RoleButton } from "../role-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -45,6 +46,22 @@ async function getPartnerEvidenceHistory(
   return res.json();
 }
 
+async function getPartnerStageHistory(
+  accessToken: string,
+  id: string,
+): Promise<StageHistory[]> {
+  const res = await fetch(
+    `${process.env.BACKEND_URL}/milestones/admin/partners/${id}/stages`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export default async function AdminPartnerDetailPage({
   params,
 }: {
@@ -71,7 +88,10 @@ export default async function AdminPartnerDetailPage({
     notFound();
   }
 
-  const history = await getPartnerEvidenceHistory(session.access_token, id);
+  const [stages, history] = await Promise.all([
+    getPartnerStageHistory(session.access_token, id),
+    getPartnerEvidenceHistory(session.access_token, id),
+  ]);
 
   return (
     <>
@@ -113,6 +133,13 @@ export default async function AdminPartnerDetailPage({
             </div>
             <RoleButton user={partner} isSelf={partner.id === profile.id} />
           </div>
+        </div>
+
+        <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
+          Histórico por etapa
+        </h2>
+        <div className="mb-10">
+          <StageHistoryList stages={stages} />
         </div>
 
         <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
