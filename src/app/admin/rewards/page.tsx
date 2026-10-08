@@ -86,7 +86,10 @@ export default async function AdminRewardsPage({
   return (
     <>
       <Navbar profile={profile} />
-      <main className="mx-auto w-full max-w-3xl px-6 py-16">
+      {/* A tabela de solicitações precisa de mais largura que o catálogo. */}
+      <main
+        className={`mx-auto w-full px-6 py-16 ${tab === "solicitacoes" ? "max-w-5xl" : "max-w-3xl"}`}
+      >
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
           Recompensas
         </h1>
@@ -129,7 +132,12 @@ export default async function AdminRewardsPage({
               </p>
               <RedemptionsExportButton rows={redemptions} />
             </div>
-            <RedemptionQueue initialItems={redemptions} />
+            <RedemptionQueue
+              initialItems={redemptions}
+              stageByMilestone={Object.fromEntries(
+                milestones.map((m) => [m.id, m.order_index]),
+              )}
+            />
           </>
         )}
       </main>
