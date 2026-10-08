@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { EvidenceQueueItem, PartnerProfile, StageHistory } from "@/lib/types";
+import type {
+  EvidenceQueueItem,
+  PartnerAccess,
+  PartnerProfile,
+  RedemptionQueueItem,
+  StageHistory,
+} from "@/lib/types";
 import { Navbar } from "@/components/navbar";
+import { ActivityTimeline } from "./activity-timeline";
 import { EvidenceHistory } from "./evidence-history";
+import { PartnerSummary } from "./partner-summary";
 import { StageHistoryList } from "./stage-history";
+import { buildTimeline } from "./timeline-events";
 import { RoleButton } from "../role-button";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -62,6 +71,35 @@ async function getPartnerStageHistory(
   return res.json();
 }
 
+async function getPartnerAccess(
+  accessToken: string,
+  id: string,
+): Promise<PartnerAccess | null> {
+  const res = await fetch(`${process.env.BACKEND_URL}/partners/${id}/access`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function getPartnerRedemptions(
+  accessToken: string,
+  id: string,
+): Promise<RedemptionQueueItem[]> {
+  const res = await fetch(
+    `${process.env.BACKEND_URL}/rewards/admin/partners/${id}/redemptions`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export default async function AdminPartnerDetailPage({
   params,
 }: {
@@ -88,10 +126,13 @@ export default async function AdminPartnerDetailPage({
     notFound();
   }
 
-  const [stages, history] = await Promise.all([
+  const [stages, history, access, redemptions] = await Promise.all([
     getPartnerStageHistory(session.access_token, id),
     getPartnerEvidenceHistory(session.access_token, id),
+    getPartnerAccess(session.access_token, id),
+    getPartnerRedemptions(session.access_token, id),
   ]);
+  const timeline = buildTimeline(access, stages, redemptions);
 
   return (
     <>
@@ -135,17 +176,34 @@ export default async function AdminPartnerDetailPage({
           </div>
         </div>
 
-        <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
-          Histórico por etapa
-        </h2>
-        <div className="mb-10">
-          <StageHistoryList stages={stages} />
-        </div>
+        <PartnerSummary access={access} stages={stages} redemptions={redemptions} />
 
         <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
-          Histórico de evidências
+          Histórico do parceiro
         </h2>
-        <EvidenceHistory items={history} />
+        <div className="mb-10">
+          <ActivityTimeline events={timeline} />
+        </div>
+
+        <details className="group mb-4">
+          <summary className="mb-4 cursor-pointer list-none text-lg font-semibold tracking-tight text-ink">
+            <span className="mr-2 inline-block text-ink-muted transition-transform group-open:rotate-90">
+              ▸
+            </span>
+            Detalhe por etapa
+          </summary>
+          <StageHistoryList stages={stages} />
+        </details>
+
+        <details className="group">
+          <summary className="mb-4 cursor-pointer list-none text-lg font-semibold tracking-tight text-ink">
+            <span className="mr-2 inline-block text-ink-muted transition-transform group-open:rotate-90">
+              ▸
+            </span>
+            Evidências enviadas ({history.length})
+          </summary>
+          <EvidenceHistory items={history} />
+        </details>
       </main>
     </>
   );

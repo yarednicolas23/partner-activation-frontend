@@ -178,3 +178,11 @@ export interface StageHistory {
     > | null;
   }[];
 }
+
+/** Acessos do parceiro (admin) — GET /partners/:id/access. */
+export interface PartnerAccess {
+  invited_at: string;
+  first_sign_in_at: string | null;
+  last_sign_in_at: string | null;
+  reminded_at: string | null;
+}
