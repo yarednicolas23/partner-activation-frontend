@@ -50,6 +50,7 @@ export function StageModal({
 
   const status = stageVisualStatus(milestone);
   const progress = stageTaskProgress(milestone);
+  const prev = milestones.find((m) => m.order_index === milestone.order_index - 1);
   const next = milestones.find((m) => m.order_index === milestone.order_index + 1);
 
   const defaultOpenTaskId = milestone.locked
@@ -94,7 +95,18 @@ export function StageModal({
             </motion.div>
 
             <div className="flex w-full max-w-[42rem] items-center justify-between gap-6 font-display">
-              <div className="min-w-0">
+              {prev && (
+                <button
+                  type="button"
+                  onClick={() => onSelect(prev.id)}
+                  aria-label="Ver etapa anterior"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition hover:bg-surface"
+                >
+                  <ChevronLeftIcon />
+                </button>
+              )}
+
+              <div className="min-w-0 flex-1">
                 <p className="text-base text-ink-muted">Etapa {milestone.order_index} de 5</p>
                 <p className="truncate text-[28px] font-bold leading-tight text-ink">
                   {milestone.locked ? "Bloqueada" : milestone.title}
@@ -236,6 +248,14 @@ function CloseIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m15 6-6 6 6 6" />
     </svg>
   );
 }
