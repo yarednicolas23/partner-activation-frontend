@@ -92,6 +92,7 @@ export function StageModal({
                 className="object-contain"
                 priority
               />
+              {status === "completed" && <CompletedBadge />}
             </motion.div>
 
             <div className="flex w-full max-w-[42rem] items-center justify-between gap-6 font-display">
@@ -226,6 +227,48 @@ export function StageModal({
 }
 
 const GAP = 22;
+
+// Diseño: banderín "Etapa concluída" colgado sobre el edificio cuando la
+// etapa llega al 100%, con línea punteada que baja hasta el techo.
+function CompletedBadge() {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-0 z-10 w-[24%] -translate-x-1/2">
+      <motion.svg
+        viewBox="0 0 164 260"
+        className="h-auto w-full font-display"
+        role="img"
+        aria-label="Etapa concluída"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.15, ease: "easeOut" }}
+      >
+        <path d="M8 0H156a8 8 0 0 1 8 8V178L82 208L0 178V8a8 8 0 0 1 8-8Z" fill="var(--color-brand)" />
+        <path
+          d="M14 9H150a4 4 0 0 1 4 4V172L82 198L10 172V13a4 4 0 0 1 4-4Z"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <text x="82" y="44" textAnchor="middle" fill="white" fontSize="20" fontWeight="600">
+          Etapa
+        </text>
+        <text x="82" y="68" textAnchor="middle" fill="white" fontSize="20" fontWeight="600">
+          concluída
+        </text>
+        <path
+          d="M46 130l24 22 46-48"
+          fill="none"
+          stroke="white"
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M82 210V260" stroke="var(--color-brand)" strokeWidth="3" strokeDasharray="6 5" />
+      </motion.svg>
+    </div>
+  );
+}
 
 function ProgressBar({ percent, className = "" }: { percent: number; className?: string }) {
   return (
