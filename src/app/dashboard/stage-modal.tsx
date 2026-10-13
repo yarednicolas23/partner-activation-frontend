@@ -181,7 +181,7 @@ export function StageModal({
                   <p className="mt-3 text-base text-ink-muted">{milestone.description}</p>
                 )}
 
-                <div className="mb-4 mt-6 h-0.5 bg-border" />
+                <div className="mb-4 mt-6 h-0.5 shrink-0 bg-border" />
 
                 <div className="divide-y divide-border rounded-[10px] border border-border">
                   {milestone.tasks?.map((task, i) => (
