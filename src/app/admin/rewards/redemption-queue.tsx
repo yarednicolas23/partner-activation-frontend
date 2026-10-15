@@ -1,22 +1,11 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import type { RedemptionQueueItem, RedemptionStatus } from "@/lib/types";
 import { addressLines, formatPhone } from "@/lib/address";
-
-const STATUS_LABEL: Record<RedemptionStatus, string> = {
-  pending: "Pendente",
-  approved: "Aprovado",
-  rejected: "Rejeitado",
-  fulfilled: "Entregue",
-};
-
-const STATUS_CLASS: Record<RedemptionStatus, string> = {
-  pending: "bg-pastel-yellow-bg text-pastel-yellow-text",
-  approved: "bg-pastel-green-bg text-pastel-green-text",
-  rejected: "bg-pastel-red-bg text-pastel-red-text",
-  fulfilled: "bg-brand-soft text-ink",
-};
+import { STATUS_CLASS, STATUS_LABEL } from "./redemption-status";
+import { RedemptionHistoryDrawer } from "./redemption-history-drawer";
 
 const NEXT_ACTIONS: Record<RedemptionStatus, RedemptionStatus[]> = {
   pending: ["rejected", "approved"],
@@ -77,6 +66,10 @@ export function RedemptionQueue({
 }) {
   const [items, setItems] = useState(initialItems);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const closeHistory = useCallback(() => setHistoryId(null), []);
+  // Do estado (não da linha clicada): reflete revisões feitas depois de abrir.
+  const historyItem = items.find((i) => i.id === historyId) ?? null;
   const [filter, setFilter] = useState<Filter>(() =>
     initialItems.some((i) => i.status === "pending") ? "pending" : "all",
   );
@@ -172,16 +165,26 @@ export function RedemptionQueue({
                       {formatDate(item.requested_at)}
                     </td>
                     <td className="px-4 py-3 text-right align-top">
-                      <button
-                        type="button"
-                        onClick={() => setOpenId(open ? null : item.id)}
-                        aria-expanded={open}
-                        className={`whitespace-nowrap text-sm font-medium hover:underline ${
-                          actionable ? "text-brand" : "text-ink-muted"
-                        }`}
-                      >
-                        {actionable ? "Revisar" : "Detalhes"} {open ? "▾" : "▸"}
-                      </button>
+                      <div className="flex items-center justify-end gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setHistoryId(item.id)}
+                          aria-haspopup="dialog"
+                          className="whitespace-nowrap text-sm font-medium text-ink-muted hover:text-ink hover:underline"
+                        >
+                          Histórico
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOpenId(open ? null : item.id)}
+                          aria-expanded={open}
+                          className={`whitespace-nowrap text-sm font-medium hover:underline ${
+                            actionable ? "text-brand" : "text-ink-muted"
+                          }`}
+                        >
+                          {actionable ? "Revisar" : "Detalhes"} {open ? "▾" : "▸"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
 
@@ -208,6 +211,12 @@ export function RedemptionQueue({
           </tbody>
         </table>
       </div>
+
+      <AnimatePresence>
+        {historyItem && (
+          <RedemptionHistoryDrawer key={historyItem.id} item={historyItem} onClose={closeHistory} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

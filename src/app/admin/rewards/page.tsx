@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { RedemptionsExportButton } from "./export-button";
 import { RewardsCatalog } from "./rewards-catalog";
 import { RedemptionQueue } from "./redemption-queue";
+import { STATUS_CLASS, STATUS_LABEL, STATUS_ORDER } from "./redemption-status";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
   const res = await fetch(`${process.env.BACKEND_URL}/partners/me`, {
@@ -110,7 +111,7 @@ export default async function AdminRewardsPage({
             active={tab === "solicitacoes"}
           >
             Solicitações de resgate
-            <Count value={pendingCount} highlight={pendingCount > 0} />
+            <StatusCounts items={redemptions} />
           </TabLink>
         </nav>
 
@@ -169,16 +170,44 @@ function TabLink({
   );
 }
 
-function Count({ value, highlight }: { value: number; highlight?: boolean }) {
+function Count({ value }: { value: number }) {
+  return (
+    <span className="rounded-full bg-canvas px-2 py-0.5 text-xs font-semibold text-ink-muted">
+      {value}
+    </span>
+  );
+}
+
+/**
+ * Um segmento por status (só os que têm solicitações), cada um na cor do seu
+ * status; a soma dos segmentos é o total.
+ */
+function StatusCounts({ items }: { items: RedemptionQueueItem[] }) {
+  const segments = STATUS_ORDER.map((status) => ({
+    status,
+    value: items.filter((i) => i.status === status).length,
+  })).filter((s) => s.value > 0);
+
+  if (segments.length === 0) return <Count value={0} />;
+
+  const summary = segments
+    .map((s) => `${STATUS_LABEL[s.status]}: ${s.value}`)
+    .join(", ");
+
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-        highlight
-          ? "bg-pastel-yellow-bg text-pastel-yellow-text"
-          : "bg-canvas text-ink-muted"
-      }`}
+      className="flex overflow-hidden rounded-full text-xs font-semibold"
+      aria-label={`${items.length} no total: ${summary}`}
     >
-      {value}
+      {segments.map((s) => (
+        <span
+          key={s.status}
+          title={`${STATUS_LABEL[s.status]}: ${s.value}`}
+          className={`px-2 py-0.5 ${STATUS_CLASS[s.status]}`}
+        >
+          {s.value}
+        </span>
+      ))}
     </span>
   );
 }
