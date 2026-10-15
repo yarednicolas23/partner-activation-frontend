@@ -76,7 +76,11 @@ export function StageModal({
           {/* Mobile: bloque a altura natural y alineado arriba — con
               justify-center + min-h-0 el contenido desbordaba hacia arriba
               y cortaba el edificio. Desde lg: centrado junto al panel. */}
-          <div className="flex shrink-0 flex-col items-center gap-6 py-4 lg:min-h-0 lg:flex-1 lg:shrink lg:justify-center">
+          {/* Etapa concluída: pt extra reserva o espaço do banderín, que flutua
+              acima da imagem (fora dela, para não tapar o edifício). */}
+          <div
+            className={`flex shrink-0 flex-col items-center gap-6 py-4 lg:min-h-0 lg:flex-1 lg:shrink lg:justify-center ${status === "completed" ? "pt-[152px]" : ""}`}
+          >
             <motion.div
               key={`${milestone.id}-image`}
               className="relative aspect-square w-full max-w-[36rem] shrink-0 lg:min-h-0 lg:flex-1 lg:shrink lg:max-h-[36rem]"
@@ -228,13 +232,14 @@ export function StageModal({
 
 const GAP = 22;
 
-// Diseño: banderín "Etapa concluída" colgado sobre el edificio cuando la
-// etapa llega al 100%, con línea punteada que baja hasta el techo.
+// Diseño: banderín "Etapa concluída" flotando encima de la imagen cuando la
+// etapa llega al 100%, con línea punteada que baja hasta ella. Tamaño fijo
+// (96px → ~140px de alto): el pt-[152px] de la columna le reserva el espacio.
 function CompletedBadge() {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-0 z-10 w-[24%] -translate-x-1/2">
+    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 w-[96px] -translate-x-1/2">
       <motion.svg
-        viewBox="0 0 164 260"
+        viewBox="0 0 164 240"
         className="h-auto w-full font-display"
         role="img"
         aria-label="Etapa concluída"
@@ -264,7 +269,7 @@ function CompletedBadge() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path d="M82 210V260" stroke="var(--color-brand)" strokeWidth="3" strokeDasharray="6 5" />
+        <path d="M82 210V240" stroke="var(--color-brand)" strokeWidth="3" strokeDasharray="6 5" />
       </motion.svg>
     </div>
   );
