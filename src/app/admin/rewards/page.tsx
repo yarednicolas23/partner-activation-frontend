@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PartnerProfile, RedemptionQueueItem, Reward } from "@/lib/types";
@@ -6,6 +5,7 @@ import { Navbar } from "@/components/navbar";
 import { RedemptionsExportButton } from "./export-button";
 import { RewardsCatalog } from "./rewards-catalog";
 import { RedemptionQueue } from "./redemption-queue";
+import { TabLink } from "./tab-link";
 import { STATUS_CLASS, STATUS_LABEL, STATUS_ORDER } from "./redemption-status";
 
 async function getProfile(accessToken: string): Promise<PartnerProfile | null> {
@@ -143,30 +143,6 @@ export default async function AdminRewardsPage({
         )}
       </main>
     </>
-  );
-}
-
-function TabLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
-        active
-          ? "border-brand text-ink"
-          : "border-transparent text-ink-muted hover:text-ink"
-      }`}
-    >
-      {children}
-    </Link>
   );
 }
 
