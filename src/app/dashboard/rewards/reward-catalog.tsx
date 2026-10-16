@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import type {
@@ -12,6 +13,7 @@ import type {
 } from "@/lib/types";
 import { addressLines, formatPhone, shippingAddressFromProfile } from "@/lib/address";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "../stage-art";
+import { DeliveryTrackingDrawer } from "./delivery-tracking-drawer";
 
 type CardStatus = "locked" | "available" | "pending" | "shipping" | "delivered" | "rejected";
 
@@ -111,6 +113,9 @@ export function RewardCatalog({
 }) {
   const [redemptions, setRedemptions] = useState(initialRedemptions);
   const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const [trackingId, setTrackingId] = useState<string | null>(null);
+  const closeTracking = useCallback(() => setTrackingId(null), []);
+  const trackingItem = redemptions.find((r) => r.id === trackingId) ?? null;
   const address = shippingAddressFromProfile(profile);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -185,6 +190,7 @@ export function RewardCatalog({
                 redemption={redemptionByReward.get(reward.id)}
                 hasAddress={address !== null}
                 addressConfirmed={addressConfirmed}
+                onTrack={setTrackingId}
                 onRedeemed={(redemption) =>
                   // Pedir de novo uma rejeitada reabre a mesma solicitação.
                   setRedemptions((current) => [
@@ -197,6 +203,16 @@ export function RewardCatalog({
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {trackingItem && (
+          <DeliveryTrackingDrawer
+            key={trackingItem.id}
+            item={trackingItem}
+            onClose={closeTracking}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -292,6 +308,7 @@ function RewardCard({
   redemption,
   hasAddress,
   addressConfirmed,
+  onTrack,
   onRedeemed,
 }: {
   reward: RewardWithMilestone;
@@ -299,6 +316,7 @@ function RewardCard({
   redemption: RedemptionQueueItem | undefined;
   hasAddress: boolean;
   addressConfirmed: boolean;
+  onTrack: (redemptionId: string) => void;
   onRedeemed: (redemption: RedemptionQueueItem) => void;
 }) {
   const [sending, setSending] = useState(false);
@@ -446,26 +464,15 @@ function RewardCard({
               <p className="text-xs text-pastel-red-text">Não foi possível enviar. Tente novamente.</p>
             )}
 
-            {/* "Ver detalhes" / "Acompanhar entrega" ainda não têm uma página de
-               destino no backend — ficam como preview visual do design até existir. */}
-            {status === "delivered" && (
+            {/* Seguimento da entrega com o histórico da solicitação. */}
+            {(status === "pending" || status === "shipping" || status === "delivered") && (
               <button
                 type="button"
-                disabled
-                className="flex w-full cursor-default items-center justify-between rounded-full bg-canvas px-4 py-2.5 text-sm font-medium text-ink-muted"
+                onClick={() => onTrack(redemption!.id)}
+                aria-haspopup="dialog"
+                className="flex w-full items-center justify-between rounded-full bg-canvas px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-brand-soft hover:text-brand"
               >
-                Ver detalhes
-                <ChevronRightIcon />
-              </button>
-            )}
-
-            {status === "shipping" && (
-              <button
-                type="button"
-                disabled
-                className="flex w-full cursor-default items-center justify-between rounded-full bg-canvas px-4 py-2.5 text-sm font-medium text-ink-muted"
-              >
-                Acompanhar entrega
+                {status === "delivered" ? "Ver detalhes" : "Acompanhar entrega"}
                 <ChevronRightIcon />
               </button>
             )}
