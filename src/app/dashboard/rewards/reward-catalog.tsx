@@ -96,6 +96,10 @@ function cardStatus(
 
 const PROFILE_ADDRESS_HREF = "/dashboard/perfil?next=/dashboard/rewards#endereco";
 
+// Botón "Acompanhar entrega" / "Ver detalhes" de cada card — oculto por ahora;
+// el drawer de seguimiento sigue implementado, basta con volver a true.
+const SHOW_DELIVERY_TRACKING = false;
+
 function needsShipping(reward: RewardWithMilestone): boolean {
   return reward.type !== "digital";
 }
@@ -465,7 +469,8 @@ function RewardCard({
             )}
 
             {/* Seguimento da entrega com o histórico da solicitação. */}
-            {(status === "pending" || status === "shipping" || status === "delivered") && (
+            {SHOW_DELIVERY_TRACKING &&
+              (status === "pending" || status === "shipping" || status === "delivered") && (
               <button
                 type="button"
                 onClick={() => onTrack(redemption!.id)}
