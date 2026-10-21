@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { MilestoneView } from "@/lib/types";
 import { isMilestoneComplete } from "./stage-art";
-import { programDeadline } from "./program-deadline";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -12,14 +11,16 @@ function formatDate(iso: string): string {
 export function ProgressSummary({
   milestones,
   registeredAt,
+  deadlineAt,
 }: {
   milestones: MilestoneView[];
   registeredAt: string;
+  /** Prazo resolvido pelo backend (GET /deadlines/me); null se não carregou. */
+  deadlineAt: string | null;
 }) {
   const total = milestones.length;
   const completed = milestones.filter(isMilestoneComplete).length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const deadline = programDeadline(registeredAt);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:w-[560px] lg:shrink-0">
@@ -43,12 +44,14 @@ export function ProgressSummary({
               Início: <span className="font-medium text-ink">{formatDate(registeredAt)}</span>
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <CalendarIcon />
-            <span>
-              Prazo: <span className="font-medium text-ink">{formatDate(deadline)}</span>
-            </span>
-          </div>
+          {deadlineAt && (
+            <div className="flex items-center gap-1.5">
+              <CalendarIcon />
+              <span>
+                Prazo: <span className="font-medium text-ink">{formatDate(deadlineAt)}</span>
+              </span>
+            </div>
+          )}
         </dl>
       </div>
 

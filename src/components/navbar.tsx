@@ -47,7 +47,7 @@ export function Navbar({
             />
           </Link>
 
-          {/* Links no header a partir de md (admin: lg, tem 4 links); abaixo
+          {/* Links no header a partir de md (admin: lg, tem 5 links); abaixo
               disso vão para a BottomNav. */}
           <nav className={`hidden shrink-0 items-center gap-2 ${isAdmin ? "lg:flex" : "md:flex"}`}>
             <NavLinks isAdmin={isAdmin} pathname={pathname} />
@@ -105,6 +105,13 @@ function NavLinks({
         active={pathname.startsWith("/admin/partners")}
       >
         Parceiros
+      </NavLink>
+      <NavLink
+        compact={compact}
+        href="/admin/timeline"
+        active={pathname === "/admin/timeline"}
+      >
+        Timeline
       </NavLink>
       <NavLink
         compact={compact}

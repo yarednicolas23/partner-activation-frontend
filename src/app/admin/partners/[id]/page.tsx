@@ -5,11 +5,13 @@ import type {
   EvidenceQueueItem,
   PartnerAccess,
   PartnerProfile,
+  ProgramDeadline,
   RedemptionQueueItem,
   StageHistory,
 } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
 import { ActivityTimeline } from "./activity-timeline";
+import { DeadlinePanel } from "./deadline-panel";
 import { EvidenceHistory } from "./evidence-history";
 import { PartnerSummary } from "./partner-summary";
 import { StageHistoryList } from "./stage-history";
@@ -100,6 +102,19 @@ async function getPartnerRedemptions(
   return res.json();
 }
 
+async function getPartnerDeadline(
+  accessToken: string,
+  id: string,
+): Promise<ProgramDeadline | null> {
+  const res = await fetch(`${process.env.BACKEND_URL}/deadlines/admin/partners/${id}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export default async function AdminPartnerDetailPage({
   params,
 }: {
@@ -126,11 +141,13 @@ export default async function AdminPartnerDetailPage({
     notFound();
   }
 
-  const [stages, history, access, redemptions] = await Promise.all([
+  const [stages, history, access, redemptions, deadline] = await Promise.all([
     getPartnerStageHistory(session.access_token, id),
     getPartnerEvidenceHistory(session.access_token, id),
     getPartnerAccess(session.access_token, id),
     getPartnerRedemptions(session.access_token, id),
+    // Admins não têm jornada nem prazo.
+    partner.role === "partner" ? getPartnerDeadline(session.access_token, id) : null,
   ]);
   const timeline = buildTimeline(access, stages, redemptions);
 
@@ -176,7 +193,14 @@ export default async function AdminPartnerDetailPage({
           </div>
         </div>
 
-        <PartnerSummary access={access} stages={stages} redemptions={redemptions} />
+        <PartnerSummary
+          access={access}
+          deadline={deadline}
+          stages={stages}
+          redemptions={redemptions}
+        />
+
+        {deadline && <DeadlinePanel deadline={deadline} />}
 
         <h2 className="mb-4 text-lg font-semibold tracking-tight text-ink">
           Histórico do parceiro

@@ -2,7 +2,6 @@ import Image from "next/image";
 import type { MilestoneView } from "@/lib/types";
 import { findCurrentMilestone, isMilestoneComplete, stageTaskProgress } from "./stage-art";
 import { StatSlider } from "./stat-slider";
-import { programDeadline } from "./program-deadline";
 
 function pluralize(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
@@ -32,14 +31,14 @@ function timeRemainingLabel(deadlineIso: string): string {
 
 export function ProgressFooter({
   milestones,
-  registeredAt,
+  deadlineAt,
 }: {
   milestones: MilestoneView[];
-  registeredAt: string;
+  /** Prazo resolvido pelo backend (GET /deadlines/me); null se não carregou. */
+  deadlineAt: string | null;
 }) {
   if (milestones.length === 0) return null;
 
-  const deadline = programDeadline(registeredAt);
   const allDone = milestones.every(isMilestoneComplete);
   const current = findCurrentMilestone(milestones);
   const next = current
@@ -53,7 +52,7 @@ export function ProgressFooter({
       key="time"
       icon="/clock.svg"
       label="Tempo restante para concluir o programa"
-      value={timeRemainingLabel(deadline)}
+      value={deadlineAt ? timeRemainingLabel(deadlineAt) : "—"}
       valueClassName="text-brand"
     />,
     <Stat

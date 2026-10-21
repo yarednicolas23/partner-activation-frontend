@@ -195,3 +195,68 @@ export interface PartnerAccess {
   last_sign_in_at: string | null;
   reminded_at: string | null;
 }
+
+export type ExtensionStatus = "pending" | "approved" | "rejected";
+
+/** Origem do prazo: prazo geral no convite, ajuste do admin ou prorrogação. */
+export type DeadlineSource = "program" | "admin" | "extension";
+
+/** Solicitação de prorrogação do prazo do programa. */
+export interface ExtensionRequest {
+  id: string;
+  partner_id: string;
+  status: ExtensionStatus;
+  reason: string | null;
+  previous_deadline_at: string;
+  new_deadline_at: string | null;
+  admin_note: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  requested_at: string;
+}
+
+/**
+ * Prazo do programa resolvido pelo backend — GET /deadlines/me (parceiro) e
+ * GET /deadlines/admin/partners/:id (admin).
+ */
+export interface ProgramDeadline {
+  partner_id: string;
+  started_at: string;
+  deadline_at: string;
+  source: DeadlineSource;
+  note: string | null;
+  updated_at: string | null;
+  expired: boolean;
+  journey_completed: boolean;
+  can_request_extension: boolean;
+  extension_months: number;
+  suggested_extension_deadline_at: string | null;
+  /** Mais recente primeiro. */
+  requests: ExtensionRequest[];
+}
+
+/** Fila de prorrogações do admin — GET /deadlines/admin/extension-requests. */
+export interface ExtensionQueueItem extends ExtensionRequest {
+  partner: Pick<PartnerProfile, "id" | "email" | "full_name" | "company_name">;
+  suggested_deadline_at: string;
+}
+
+/** Prazo geral do programa — GET/PUT /deadlines/admin/settings. */
+export interface ProgramSettings {
+  duration_months: number;
+  extension_months: number;
+  updated_by: string | null;
+  updated_at: string | null;
+}
+
+/** Linha da tabela de prazos do Timeline — GET /deadlines/admin/partners. */
+export interface TimelineRow {
+  partner: Pick<PartnerProfile, "id" | "email" | "full_name" | "company_name">;
+  started_at: string;
+  deadline_at: string;
+  source: DeadlineSource;
+  expired: boolean;
+  completed_stages: number;
+  total_stages: number;
+  pending_request_id: string | null;
+}

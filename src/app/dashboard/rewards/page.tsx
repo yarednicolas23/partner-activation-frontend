@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   MilestoneView,
   PartnerProfile,
+  ProgramDeadline,
   RedemptionQueueItem,
   RewardWithMilestone,
 } from "@/lib/types";
@@ -52,6 +53,16 @@ async function getMyRedemptions(
   return res.json();
 }
 
+async function getDeadline(accessToken: string): Promise<ProgramDeadline | null> {
+  const res = await fetch(`${process.env.BACKEND_URL}/deadlines/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export default async function RewardsPage() {
   const supabase = await createClient();
   const {
@@ -67,10 +78,11 @@ export default async function RewardsPage() {
     redirect("/admin/dashboard");
   }
 
-  const [milestones, catalog, myRedemptions] = await Promise.all([
+  const [milestones, catalog, myRedemptions, deadline] = await Promise.all([
     getMilestones(session.access_token),
     getCatalog(session.access_token),
     getMyRedemptions(session.access_token),
+    getDeadline(session.access_token),
   ]);
 
   return (
@@ -85,7 +97,7 @@ export default async function RewardsPage() {
               milestones={milestones}
               initialRedemptions={myRedemptions}
             />
-            <ProgressFooter milestones={milestones} registeredAt={profile.created_at} />
+            <ProgressFooter milestones={milestones} deadlineAt={deadline?.deadline_at ?? null} />
           </>
         ) : (
           <div className="rounded-lg border border-border bg-surface p-6">

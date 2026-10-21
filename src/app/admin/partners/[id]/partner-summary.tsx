@@ -1,5 +1,9 @@
-import { programDeadline } from "@/app/dashboard/program-deadline";
-import type { PartnerAccess, RedemptionQueueItem, StageHistory } from "@/lib/types";
+import type {
+  PartnerAccess,
+  ProgramDeadline,
+  RedemptionQueueItem,
+  StageHistory,
+} from "@/lib/types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -17,10 +21,12 @@ function daysAgo(iso: string, now: number): string {
 /** Cartões de resumo no topo do detalhe do parceiro. */
 export function PartnerSummary({
   access,
+  deadline: programDeadline,
   stages,
   redemptions,
 }: {
   access: PartnerAccess | null;
+  deadline: ProgramDeadline | null;
   stages: StageHistory[];
   redemptions: RedemptionQueueItem[];
 }) {
@@ -34,7 +40,7 @@ export function PartnerSummary({
   const daysInProgram = invitedAt
     ? Math.max(0, Math.floor((now - Date.parse(invitedAt)) / DAY_MS))
     : null;
-  const deadline = invitedAt ? programDeadline(invitedAt) : null;
+  const deadline = programDeadline?.deadline_at ?? null;
   const overdue = deadline !== null && Date.parse(deadline) < now && current !== undefined;
 
   const pendingRedemptions = redemptions.filter((r) => r.status === "pending").length;

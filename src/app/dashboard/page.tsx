@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { MilestoneView, PartnerProfile } from "@/lib/types";
+import type { MilestoneView, PartnerProfile, ProgramDeadline } from "@/lib/types";
 import { Navbar } from "@/components/navbar";
+import { ExtensionBanner } from "./extension-banner";
 import { JourneyCarousel } from "./journey-carousel";
 import { JourneyMap } from "./journey-map";
 import { ProgressFooter } from "./progress-footer";
@@ -28,6 +29,16 @@ async function getMilestones(accessToken: string): Promise<MilestoneView[]> {
   return res.json();
 }
 
+async function getDeadline(accessToken: string): Promise<ProgramDeadline | null> {
+  const res = await fetch(`${process.env.BACKEND_URL}/deadlines/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -46,9 +57,9 @@ export default async function DashboardPage() {
   }
 
   const isPartner = profile?.role === "partner";
-  const milestones: MilestoneView[] = isPartner
-    ? await getMilestones(session.access_token)
-    : [];
+  const [milestones, deadline] = isPartner
+    ? await Promise.all([getMilestones(session.access_token), getDeadline(session.access_token)])
+    : [[] as MilestoneView[], null];
   const journeyDone = milestones.length > 0 && milestones.every(isMilestoneComplete);
 
   return (
@@ -93,7 +104,11 @@ export default async function DashboardPage() {
           </div>
 
           {isPartner && (
-            <ProgressSummary milestones={milestones} registeredAt={profile.created_at} />
+            <ProgressSummary
+              milestones={milestones}
+              registeredAt={profile.created_at}
+              deadlineAt={deadline?.deadline_at ?? null}
+            />
           )}
         </div>
 
@@ -108,6 +123,7 @@ export default async function DashboardPage() {
 
         {isPartner && (
           <>
+            {deadline && <ExtensionBanner deadline={deadline} />}
             {/* Mobile (< md): carrusel de cards. Desktop: mapa isométrico original. */}
             <div className="md:hidden">
               <JourneyCarousel milestones={milestones} />
@@ -115,7 +131,7 @@ export default async function DashboardPage() {
             <div className="hidden md:block">
               <JourneyMap milestones={milestones} />
             </div>
-            <ProgressFooter milestones={milestones} registeredAt={profile.created_at} />
+            <ProgressFooter milestones={milestones} deadlineAt={deadline?.deadline_at ?? null} />
           </>
         )}
       </main>
